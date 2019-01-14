@@ -20,6 +20,7 @@
 		F33642C821ED14F400733DEC /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642C721ED14F300733DEC /* Metal.framework */; };
 		F33642CA21ED14F900733DEC /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642C921ED14F900733DEC /* CoreBluetooth.framework */; };
 		F33642CC21ED14FF00733DEC /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642CB21ED14FF00733DEC /* AVFoundation.framework */; };
+		F33642D121ED16D500733DEC /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F33642D021ED16D500733DEC /* main.c */; };
 		F3F9B58421ED139A00DA0BB2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F3F9B58321ED139A00DA0BB2 /* Assets.xcassets */; };
 		F3F9B58721ED139A00DA0BB2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F3F9B58521ED139A00DA0BB2 /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
@@ -54,6 +55,7 @@
 		F33642C721ED14F300733DEC /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		F33642C921ED14F900733DEC /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		F33642CB21ED14FF00733DEC /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		F33642D021ED16D500733DEC /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = src/main.c; sourceTree = "<group>"; };
 		F3F9B57921ED139900DA0BB2 /* PROJFOO.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PROJFOO.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3F9B58321ED139A00DA0BB2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F3F9B58621ED139A00DA0BB2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -107,6 +109,7 @@
 		F3F9B57021ED139900DA0BB2 = {
 			isa = PBXGroup;
 			children = (
+				F33642D021ED16D500733DEC /* main.c */,
 				F3F9B58E21ED141500DA0BB2 /* SDL.xcodeproj */,
 				F3F9B57B21ED139900DA0BB2 /* PROJFOO */,
 				F3F9B57A21ED139900DA0BB2 /* Products */,
@@ -234,6 +237,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F33642D121ED16D500733DEC /* main.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -372,6 +376,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = "/Users/user913046/Downloads/SDL2-2.0.9/include";
 				INFOPLIST_FILE = PROJFOO/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -389,6 +394,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = "/Users/user913046/Downloads/SDL2-2.0.9/include";
 				INFOPLIST_FILE = PROJFOO/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
