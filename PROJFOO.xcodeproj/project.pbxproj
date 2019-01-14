@@ -7,21 +7,58 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F3F9B57D21ED139900DA0BB2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3F9B57C21ED139900DA0BB2 /* AppDelegate.swift */; };
-		F3F9B57F21ED139900DA0BB2 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3F9B57E21ED139900DA0BB2 /* ViewController.swift */; };
-		F3F9B58221ED139900DA0BB2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F3F9B58021ED139900DA0BB2 /* Main.storyboard */; };
+		F33642B421ED14A400733DEC /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3F9B59721ED141600DA0BB2 /* libSDL2.a */; };
+		F33642B621ED14B300733DEC /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642B521ED14B300733DEC /* GameController.framework */; };
+		F33642B821ED14BA00733DEC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642B721ED14BA00733DEC /* Foundation.framework */; };
+		F33642BA21ED14C000733DEC /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642B921ED14C000733DEC /* UIKit.framework */; };
+		F33642BC21ED14C700733DEC /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642BB21ED14C700733DEC /* OpenGLES.framework */; };
+		F33642BE21ED14CD00733DEC /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642BD21ED14CD00733DEC /* QuartzCore.framework */; };
+		F33642C021ED14D600733DEC /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642BF21ED14D600733DEC /* CoreAudio.framework */; };
+		F33642C221ED14E200733DEC /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642C121ED14E200733DEC /* AudioToolbox.framework */; };
+		F33642C421ED14E900733DEC /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642C321ED14E900733DEC /* CoreGraphics.framework */; };
+		F33642C621ED14EE00733DEC /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642C521ED14EE00733DEC /* CoreMotion.framework */; };
+		F33642C821ED14F400733DEC /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642C721ED14F300733DEC /* Metal.framework */; };
+		F33642CA21ED14F900733DEC /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642C921ED14F900733DEC /* CoreBluetooth.framework */; };
+		F33642CC21ED14FF00733DEC /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F33642CB21ED14FF00733DEC /* AVFoundation.framework */; };
 		F3F9B58421ED139A00DA0BB2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F3F9B58321ED139A00DA0BB2 /* Assets.xcassets */; };
 		F3F9B58721ED139A00DA0BB2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F3F9B58521ED139A00DA0BB2 /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		F3F9B59621ED141600DA0BB2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F3F9B58E21ED141500DA0BB2 /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = FD6526630DE8FCCB002AD96B;
+			remoteInfo = "libSDL-iOS";
+		};
+		F3F9B59821ED141600DA0BB2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F3F9B58E21ED141500DA0BB2 /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = FAB598141BB5C1B100BE72C5;
+			remoteInfo = "libSDL-tvOS";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		F33642B521ED14B300733DEC /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
+		F33642B721ED14BA00733DEC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		F33642B921ED14C000733DEC /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		F33642BB21ED14C700733DEC /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		F33642BD21ED14CD00733DEC /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		F33642BF21ED14D600733DEC /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		F33642C121ED14E200733DEC /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		F33642C321ED14E900733DEC /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		F33642C521ED14EE00733DEC /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		F33642C721ED14F300733DEC /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		F33642C921ED14F900733DEC /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
+		F33642CB21ED14FF00733DEC /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		F3F9B57921ED139900DA0BB2 /* PROJFOO.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PROJFOO.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F3F9B57C21ED139900DA0BB2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		F3F9B57E21ED139900DA0BB2 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		F3F9B58121ED139900DA0BB2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		F3F9B58321ED139A00DA0BB2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F3F9B58621ED139A00DA0BB2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F3F9B58821ED139A00DA0BB2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F3F9B58E21ED141500DA0BB2 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = "../../Downloads/SDL2-2.0.9/Xcode-iOS/SDL/SDL.xcodeproj"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -29,17 +66,51 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F33642CC21ED14FF00733DEC /* AVFoundation.framework in Frameworks */,
+				F33642CA21ED14F900733DEC /* CoreBluetooth.framework in Frameworks */,
+				F33642C821ED14F400733DEC /* Metal.framework in Frameworks */,
+				F33642C621ED14EE00733DEC /* CoreMotion.framework in Frameworks */,
+				F33642C421ED14E900733DEC /* CoreGraphics.framework in Frameworks */,
+				F33642C221ED14E200733DEC /* AudioToolbox.framework in Frameworks */,
+				F33642C021ED14D600733DEC /* CoreAudio.framework in Frameworks */,
+				F33642BE21ED14CD00733DEC /* QuartzCore.framework in Frameworks */,
+				F33642BC21ED14C700733DEC /* OpenGLES.framework in Frameworks */,
+				F33642BA21ED14C000733DEC /* UIKit.framework in Frameworks */,
+				F33642B821ED14BA00733DEC /* Foundation.framework in Frameworks */,
+				F33642B621ED14B300733DEC /* GameController.framework in Frameworks */,
+				F33642B421ED14A400733DEC /* libSDL2.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F33642AE21ED14A400733DEC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F33642CB21ED14FF00733DEC /* AVFoundation.framework */,
+				F33642C921ED14F900733DEC /* CoreBluetooth.framework */,
+				F33642C721ED14F300733DEC /* Metal.framework */,
+				F33642C521ED14EE00733DEC /* CoreMotion.framework */,
+				F33642C321ED14E900733DEC /* CoreGraphics.framework */,
+				F33642C121ED14E200733DEC /* AudioToolbox.framework */,
+				F33642BF21ED14D600733DEC /* CoreAudio.framework */,
+				F33642BD21ED14CD00733DEC /* QuartzCore.framework */,
+				F33642BB21ED14C700733DEC /* OpenGLES.framework */,
+				F33642B921ED14C000733DEC /* UIKit.framework */,
+				F33642B721ED14BA00733DEC /* Foundation.framework */,
+				F33642B521ED14B300733DEC /* GameController.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		F3F9B57021ED139900DA0BB2 = {
 			isa = PBXGroup;
 			children = (
+				F3F9B58E21ED141500DA0BB2 /* SDL.xcodeproj */,
 				F3F9B57B21ED139900DA0BB2 /* PROJFOO */,
 				F3F9B57A21ED139900DA0BB2 /* Products */,
+				F33642AE21ED14A400733DEC /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -54,14 +125,20 @@
 		F3F9B57B21ED139900DA0BB2 /* PROJFOO */ = {
 			isa = PBXGroup;
 			children = (
-				F3F9B57C21ED139900DA0BB2 /* AppDelegate.swift */,
-				F3F9B57E21ED139900DA0BB2 /* ViewController.swift */,
-				F3F9B58021ED139900DA0BB2 /* Main.storyboard */,
 				F3F9B58321ED139A00DA0BB2 /* Assets.xcassets */,
 				F3F9B58521ED139A00DA0BB2 /* LaunchScreen.storyboard */,
 				F3F9B58821ED139A00DA0BB2 /* Info.plist */,
 			);
 			path = PROJFOO;
+			sourceTree = "<group>";
+		};
+		F3F9B58F21ED141500DA0BB2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F3F9B59721ED141600DA0BB2 /* libSDL2.a */,
+				F3F9B59921ED141600DA0BB2 /* libSDL2.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -110,12 +187,35 @@
 			mainGroup = F3F9B57021ED139900DA0BB2;
 			productRefGroup = F3F9B57A21ED139900DA0BB2 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = F3F9B58F21ED141500DA0BB2 /* Products */;
+					ProjectRef = F3F9B58E21ED141500DA0BB2 /* SDL.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				F3F9B57821ED139900DA0BB2 /* PROJFOO */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		F3F9B59721ED141600DA0BB2 /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSDL2.a;
+			remoteRef = F3F9B59621ED141600DA0BB2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F3F9B59921ED141600DA0BB2 /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSDL2.a;
+			remoteRef = F3F9B59821ED141600DA0BB2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		F3F9B57721ED139900DA0BB2 /* Resources */ = {
@@ -124,7 +224,6 @@
 			files = (
 				F3F9B58721ED139A00DA0BB2 /* LaunchScreen.storyboard in Resources */,
 				F3F9B58421ED139A00DA0BB2 /* Assets.xcassets in Resources */,
-				F3F9B58221ED139900DA0BB2 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -135,22 +234,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3F9B57F21ED139900DA0BB2 /* ViewController.swift in Sources */,
-				F3F9B57D21ED139900DA0BB2 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		F3F9B58021ED139900DA0BB2 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				F3F9B58121ED139900DA0BB2 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		F3F9B58521ED139A00DA0BB2 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
