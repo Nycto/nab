@@ -121,7 +121,20 @@ proc build(self: Config) =
         "--dynlibOverride:SDL2",
         "--passL:" & sdl2,
         "--passL:-lm",
-        "--passL:-lsndio"
+        "--passL:-liconv",
+        "--passL:'-framework CoreAudio'",
+        "--passL:'-framework AudioToolbox'",
+        "--passL:'-framework CoreGraphics'",
+        "--passL:'-framework QuartzCore'",
+        "--passL:'-framework OpenGL'",
+        "--passL:'-framework AppKit'",
+        "--passL:'-framework AudioUnit'",
+        "--passL:'-framework ForceFeedback'",
+        "--passL:'-framework IOKit'",
+        "--passL:'-framework Carbon'",
+        "--passL:'-framework CoreServices'",
+        "--passL:'-framework ApplicationServices'",
+        "--passL:'-framework Metal'"
     )
 
 let conf = Config(
