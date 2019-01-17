@@ -2,6 +2,7 @@ import os, httpclient, strutils, ospaths, osproc, sequtils
 
 type
     Config = object ## Build configuration
+        sourceDir: string
         buildDir: string
         sdl2Version: string
 
@@ -110,11 +111,24 @@ proc sdl2(self: Config): string =
 
     self.debug "SDL2 archive location: " & result
 
+proc build(self: Config) =
+    let sdl2 = self.sdl2()
+    self.requireSh(
+        self.sourceDir,
+        requireExe("nimble"),
+        "build",
+        "--threads:on",
+        "--dynlibOverride:SDL2",
+        "--passL:" & sdl2,
+        "--passL:-lm",
+        "--passL:-lsndio"
+    )
 
 let conf = Config(
+    sourceDir: getCurrentDir(),
     buildDir: getCurrentDir() / "build",
     sdl2Version: "2.0.9"
 )
 
-discard conf.sdl2()
+conf.build()
 
