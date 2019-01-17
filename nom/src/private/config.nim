@@ -1,5 +1,4 @@
 import util, httpclient, os, strutils, osproc
-#, httpclient, strutils, ospaths, osproc, sequtils
 
 type
     Module* = concept m ## Modules that can inject settings into the build
