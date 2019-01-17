@@ -1,4 +1,4 @@
-import os, httpclient, strutils, ospaths, osproc
+import os, httpclient, strutils, ospaths, osproc, sequtils
 
 type
     Config = object ## Build configuration
@@ -79,20 +79,42 @@ proc sdl2dir(self: Config): string =
         self.log "Unzipping SDL2", "Destination: " & unzipInto
         self.requireSh(self.buildDir, requireExe("unzip"), zip, "-d", unzipInto)
 
-    self.log "SDL2 location: " & result
+    self.debug "SDL2 source location: " & result
 
+proc sdl2objects(self: Config): seq[string] =
+    ## Returns a list of object files built for SDL2
 
-proc sdl2Build(self: Config) =
-    ## Builds SDL2
+    # Configure the make file
     let dir = self.sdl2dir
     if not fileExists(dir / "Makefile"):
         self.log("Configuring SDL2 build")
         self.requireSh(dir, "configure")
+
+    # Build the source
+    let buildOutput = dir / "build"
+    if not dirExists(buildOutput):
+        self.log("Building SDL2")
+        self.requireSh(dir, requireExe("make"))
+
+    result = toSeq(walkPattern(buildOutput / "*.o"))
+
+proc sdl2(self: Config): string =
+    ## Builds SDL2 and returns the resulting .a file
+
+    # Create an archive to bundle all the objects together
+    result = self.buildDir / "sdl2.a"
+    if not result.fileExists:
+        let objs = self.sdl2objects()
+        self.log("Creating SDL2 archive", "Location: " & result)
+        self.requireSh(self.sdl2dir / "build", requireExe("ar"), concat(@["rcs", result], objs))
+
+    self.debug "SDL2 archive location: " & result
+
 
 let conf = Config(
     buildDir: getCurrentDir() / "build",
     sdl2Version: "2.0.9"
 )
 
-conf.sdl2Build()
+discard conf.sdl2()
 
