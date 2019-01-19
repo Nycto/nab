@@ -1,14 +1,16 @@
 import util, httpclient, os, strutils, osproc
 
 type
-    Module* = concept m ## Modules that can inject settings into the build
-        flags(m, Config) is seq[string]
+    Platform* = enum
+        Linux, MacOS
+
+    Module* = object ## Modules that can inject settings into the build
+        flags*: proc(): seq[string]
 
     Config* = object ## Build configuration
         sourceDir*: string
         buildDir*: string
-        #modules: seq[Module]
-        sdl2Version*: string
+        platform*: Platform
 
 proc log*(self: Config, messages: varargs[string, `$`]) =
     ## Logs an event to the console
