@@ -4,62 +4,27 @@ type
     Sdl2Module* = ref object
         sdl2Version*: string
 
-proc sdl2zip(self: Sdl2Module, conf: Config): string =
-    ## Downloads a copy of SDL2
-    result = conf.buildDir / "sdl2.zip"
-
-    if result.existsFile:
-        conf.log "SDL2 already downloaded", "Location: " & result
-        return
-
-    let url = "https://www.libsdl.org/release/SDL2-" & self.sdl2Version & ".zip"
-    conf.download(url, result)
-
-proc sdl2dir(self: Sdl2Module, conf: Config): string =
+proc sdl2source(self: Sdl2Module, conf: Config): string =
     ## Returns the location of the unzipped SDL2 source, downloading and unzipping if necessary
 
-    # Where we will target the unzip
-    let unzipInto = conf.buildDir / "sdl2"
+    # Unzip the file, downloading it if it doesn't exist
+    let unzippedTo = conf.unzip("SDL2", conf.buildDir / "sdl2") do () -> string:
+        conf.download("SDL2",
+            "https://www.libsdl.org/release/SDL2-" & self.sdl2Version & ".zip",
+            conf.buildDir / "sdl2.zip"
+        )
 
     # The zip file itself contains a directory, which is ultimately what we care about
-    result = unzipInto / ("SDL2-" & self.sdl2Version)
-
-    if not result.dirExists:
-        unzipInto.ensureDir
-        let zip = self.sdl2zip(conf)
-        conf.log "Unzipping SDL2", "Destination: " & unzipInto
-        conf.requireSh(conf.buildDir, requireExe("unzip"), zip, "-d", unzipInto)
-
-    conf.debug "SDL2 source location: " & result
-
-proc sdl2objects(self: Sdl2Module, conf: Config): seq[string] =
-    ## Returns a list of object files built for SDL2
-
-    # Configure the make file
-    let dir = self.sdl2dir(conf)
-    if not fileExists(dir / "Makefile"):
-        conf.log("Configuring SDL2 build")
-        conf.requireSh(dir, "configure")
-
-    # Build the source
-    let buildOutput = dir / "build"
-    if not dirExists(buildOutput):
-        conf.log("Building SDL2")
-        conf.requireSh(dir, requireExe("make"))
-
-    result = toSeq(walkPattern(buildOutput / "*.o"))
+    return unzippedTo / ("SDL2-" & self.sdl2Version)
 
 proc sdl2(self: Sdl2Module, conf: Config): string =
     ## Builds SDL2 and returns the resulting .a file
 
-    # Create an archive to bundle all the objects together
-    result = conf.buildDir / "sdl2.a"
-    if not result.fileExists:
-        let objs = self.sdl2objects(conf)
-        conf.log("Creating SDL2 archive", "Location: " & result)
-        conf.requireSh(self.sdl2dir(conf) / "build", requireExe("ar"), concat(@["rcs", result], objs))
+    return conf.archiveObjs("SDL2", conf.buildDir / "sdl2.a") do () -> string:
 
-    conf.debug "SDL2 archive location: " & result
+        # Call `configure` and call `make`, record the build directory
+        let sdl2Source = self.sdl2source(conf)
+        conf.configureAndMake("SDL2", sdl2Source, sdl2Source / "build")
 
 proc flags(self: Sdl2Module, conf: Config): seq[string] =
     ## Returns the compiler flags to use
@@ -99,16 +64,4 @@ proc newSdl2Module*(conf: Config): Module =
     result = Module(
         flags: proc(): auto = self.flags(conf)
     )
-
-
-#proc flags*(self: Sdl2Module, conf: Config): seq[string] =
-#    result = @[
-#        "--threads:on",
-#        "--dynlibOverride:SDL2",
-#        "--passL:" & self.sdl2(conf),
-#        "--passL:-lm",
-#        "--passL:-lsndio"
-#    ]
-
-
 
