@@ -45,21 +45,18 @@ proc xcodeSdl2(self: Sdl2Module, conf: Config): string =
 
 proc flags(self: Sdl2Module, conf: Config): seq[string] =
     ## Returns the compiler flags to use
+    let common = @[
+        "--threads:on",
+        "--dynlibOverride:SDL2",
+        "--passL:-lSDL2",
+        "--passL:-lm" ]
+
     result =
         case conf.platform
-        of Platform.Linux:
-            @[
-                "--threads:on",
-                "--dynlibOverride:SDL2",
-                "--passL:" & self.makeSdl2(conf),
-                "--passL:-lm",
-                "--passL:-lsndio" ]
+        of Platform.Linux: common.concat(@[ "--passL:" & self.makeSdl2(conf), "--passL:-lsndio" ])
         of Platform.MacOS:
-            @[
-                "--threads:on",
-                "--dynlibOverride:SDL2",
+            common.concat(@[
                 "--passL:" & self.xcodeSdl2(conf),
-                "--passL:-lm",
                 "--passL:-liconv",
                 "--passL:'-framework CoreAudio'",
                 "--passL:'-framework AudioToolbox'",
@@ -73,7 +70,7 @@ proc flags(self: Sdl2Module, conf: Config): seq[string] =
                 "--passL:'-framework Carbon'",
                 "--passL:'-framework CoreServices'",
                 "--passL:'-framework ApplicationServices'",
-                "--passL:'-framework Metal'" ]
+                "--passL:'-framework Metal'" ])
 
 proc newSdl2Module*(conf: Config): Module =
     let self = Sdl2Module(sdl2Version: "2.0.9")

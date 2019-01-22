@@ -29,15 +29,10 @@ proc sdl2gfx(self: Sdl2GfxModule, conf: Config): string =
 proc flags(self: Sdl2GfxModule, conf: Config): seq[string] =
     ## Returns the compiler flags to use
     result =
-        case conf.platform
-        of Platform.Linux:
-            @[
-                "--dynlibOverride:SDL2_gfx",
-                "--passL:" & self.sdl2gfx(conf) ]
-        of Platform.MacOS:
-            @[
-                "--dynlibOverride:SDL2_gfx",
-                "--passL:" & self.sdl2gfx(conf) ]
+        @[
+            "--dynlibOverride:SDL2_gfx",
+            "--passL:-lSDL2_gfx",
+            "--passL:" & self.sdl2gfx(conf) ]
 
 proc newSdl2GfxModule*(conf: Config): Module =
     let self = Sdl2GfxModule(version: "1.0.4")
