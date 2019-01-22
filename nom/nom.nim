@@ -1,5 +1,16 @@
 import src/private/config, src/private/sdl2, os, sequtils, parseopt, strutils
 
+template handleException(conf: Config, exec: untyped): untyped =
+    ## Catches and prints exceptions
+    try:
+        exec
+    except:
+        echo getCurrentExceptionMsg()
+        if conf.verbose:
+            raise
+        else:
+            quit(QuitFailure)
+
 proc parseCli(): Config =
     ## Parses the CLI options into a config
 
@@ -14,22 +25,23 @@ proc parseCli(): Config =
         verbose: false
     )
 
-    var parser = initOptParser()
-    for kind, key, val in parser.getopt():
-        case kind
-        of cmdArgument:
-            result.platform = parseEnum[Platform](key)
-        of cmdLongOption, cmdShortOption:
-            case key
-            of "flag", "f": result.extraFlags.add(val)
-            of "verbose", "v": result.verbose = true
-        of cmdEnd:
-            assert(false) # cannot happen
+    handleException(result):
+        var parser = initOptParser()
+        for kind, key, val in parser.getopt():
+            case kind
+            of cmdArgument:
+                result.platform = parseEnum[Platform](key)
+            of cmdLongOption, cmdShortOption:
+                case key
+                of "flag", "f": result.extraFlags.add(val)
+                of "verbose", "v": result.verbose = true
+            of cmdEnd:
+                assert(false) # cannot happen
 
 
 let conf = parseCli()
 
-try:
+handleException(conf):
 
     # Collect the list of modules
     let modules = @[
@@ -43,11 +55,4 @@ try:
 
     # Invoke nimble
     conf.requireSh(conf.sourceDir, requireExe("nimble"), args)
-
-except:
-    echo getCurrentExceptionMsg()
-    if conf.verbose:
-        raise
-    else:
-        quit(QuitFailure)
 
