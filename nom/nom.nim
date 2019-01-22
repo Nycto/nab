@@ -19,8 +19,8 @@ proc parseCli(): Config =
         sourceDir: getCurrentDir(),
         buildDir: getCurrentDir() / "build",
         platform: Platform.Linux,
-        macOsSdkVersion: "10.10",
-        macOsMinVersion: "10.10",
+        macOsSdkVersion: "10.14",
+        macOsMinVersion: "10.14",
         extraFlags: @[],
         verbose: false
     )
