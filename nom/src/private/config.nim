@@ -13,6 +13,8 @@ type
         platform*: Platform
         macOsSdkVersion*: string
         macOsMinVersion*: string
+        extraFlags*: seq[string]
+        verbose*: bool
 
 proc flags *(self: Platform): seq[string] =
     ## Returns the compiler flags to pass for a platform build
@@ -32,7 +34,8 @@ proc log*(self: Config, messages: varargs[string, `$`]) =
 
 proc debug*(self: Config, messages: varargs[string, `$`]) =
     ## Logs an event to the console
-    self.log(messages)
+    if self.verbose:
+        self.log(messages)
 
 proc requireExe*(command: string): string =
     ## Requires that a command exist on the path
