@@ -1,4 +1,4 @@
-import src/private/config, src/private/sdl2, os
+import src/private/config, src/private/sdl2, os, sequtils
 
 # General configuration
 let conf = Config(
@@ -13,7 +13,7 @@ let modules = @[
 ]
 
 # Collect the arguments to pass to nimble
-var args = @[ "build" ]
+var args = concat(@[ "build" ], conf.platform.flags())
 for module in modules:
     args.add(module.flags())
 

@@ -12,6 +12,12 @@ type
         buildDir*: string
         platform*: Platform
 
+proc flags *(self: Platform): seq[string] =
+    ## Returns the compiler flags to pass for a platform build
+    case self
+    of Platform.Linux: @[ "--os:linux", "-d:linux" ]
+    of Platform.MacOS: @[ "--os:macosx", "-d:macosx" ]
+
 proc log*(self: Config, messages: varargs[string, `$`]) =
     ## Logs an event to the console
     var first = true
