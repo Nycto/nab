@@ -4,7 +4,9 @@ import src/private/config, src/private/sdl2, os, sequtils
 let conf = Config(
     sourceDir: getCurrentDir(),
     buildDir: getCurrentDir() / "build",
-    platform: Platform.Linux
+    platform: Platform.Linux,
+    macOsSdkVersion: "10.10",
+    macOsMinVersion: "10.10"
 )
 
 # Collect the list of modules

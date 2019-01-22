@@ -17,14 +17,31 @@ proc sdl2source(self: Sdl2Module, conf: Config): string =
     # The zip file itself contains a directory, which is ultimately what we care about
     return unzippedTo / ("SDL2-" & self.sdl2Version)
 
-proc sdl2(self: Sdl2Module, conf: Config): string =
-    ## Builds SDL2 and returns the resulting .a file
+proc sdl2ArchivePath(self: Config): string =
+    ## Returns the location of the '.a' file for SDL2
+    self.buildDir / "sdl2.a"
 
-    return conf.archiveObjs("SDL2", conf.buildDir / "sdl2.a") do () -> string:
+proc makeSdl2(self: Sdl2Module, conf: Config): string =
+    ## Builds SDL2 using make and returns the resulting .a file
+
+    return conf.archiveObjs("SDL2", conf.sdl2ArchivePath) do () -> string:
 
         # Call `configure` and call `make`, record the build directory
         let sdl2Source = self.sdl2source(conf)
         conf.configureAndMake("SDL2", sdl2Source, sdl2Source / "build")
+
+proc xcodeSdl2(self: Sdl2Module, conf: Config): string =
+    ## Builds SDL2 using xcode and returns the resulting .a file
+    result = conf.sdl2ArchivePath
+    if not result.fileExists:
+        conf.requireSh(
+            conf.buildDir,
+            requireExe("xcodebuild"),
+            "-project", self.sdl2source(conf) / "Xcode/SDL/SDL.xcodeproj",
+            "-target", "Static\\ Library",
+            "-configuration", "Release",
+            "-sdk", "macosx" & conf.macOsSdkVersion,
+            "SYMROOT=build")
 
 proc flags(self: Sdl2Module, conf: Config): seq[string] =
     ## Returns the compiler flags to use
@@ -34,14 +51,14 @@ proc flags(self: Sdl2Module, conf: Config): seq[string] =
             @[
                 "--threads:on",
                 "--dynlibOverride:SDL2",
-                "--passL:" & self.sdl2(conf),
+                "--passL:" & self.makeSdl2(conf),
                 "--passL:-lm",
                 "--passL:-lsndio" ]
         of Platform.MacOS:
             @[
                 "--threads:on",
                 "--dynlibOverride:SDL2",
-                "--passL:" & self.sdl2(conf),
+                "--passL:" & self.xcodeSdl2(conf),
                 "--passL:-lm",
                 "--passL:-liconv",
                 "--passL:'-framework CoreAudio'",

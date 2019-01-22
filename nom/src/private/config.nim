@@ -11,6 +11,8 @@ type
         sourceDir*: string
         buildDir*: string
         platform*: Platform
+        macOsSdkVersion*: string
+        macOsMinVersion*: string
 
 proc flags *(self: Platform): seq[string] =
     ## Returns the compiler flags to pass for a platform build
