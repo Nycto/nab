@@ -1,4 +1,4 @@
-import config, util, os, sequtils, options
+import config, util, os, sequtils, options, sdl2gfx
 
 type
     Sdl2Module* = ref object
@@ -61,7 +61,9 @@ proc flags(self: Sdl2Module, conf: Config): seq[string] =
 proc newSdl2Module*(conf: Config): Module =
     let self = Sdl2Module(sdl2Version: "2.0.9")
 
+    let gfx = newSdl2GfxModule(conf)
+
     result = Module(
-        flags: proc(): auto = self.flags(conf)
+        flags: proc(): auto = concat(self.flags(conf), gfx.flags())
     )
 

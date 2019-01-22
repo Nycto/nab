@@ -1,4 +1,4 @@
-import util, httpclient, os, strutils, osproc, sequtils
+import util, httpclient, os, strutils, osproc, sequtils, system
 
 type
     Platform* = enum
@@ -67,6 +67,10 @@ proc unzip*(self: Config, title: string, to: string, zipFile: proc(): string): s
 
     self.debug title & " zip file location: " & to
 
+proc objs*(dir: string): seq[string] =
+    ## Returns a list of object files in a directory
+    toSeq(walkPattern(dir / "*.o"))
+
 proc configureAndMake*(self: Config, title: string, dir: string, buildsInto: string): string =
     ## runs configure, then runs make in a directory
 
@@ -75,10 +79,16 @@ proc configureAndMake*(self: Config, title: string, dir: string, buildsInto: str
     # Configure the make file
     if not fileExists(dir / "Makefile"):
         self.log("Configuring build for " & title)
-        self.requireSh(dir, "configure")
+        let configurePath = dir / "configure"
+
+        let permissions = configurePath.getFilePermissions()
+        if FilePermission.fpUserExec notin permissions:
+            configurePath.setFilePermissions(permissions + { FilePermission.fpUserExec })
+
+        self.requireSh(dir, configurePath)
 
     # Call 'make' if the build output dir doesn't exist
-    if not buildsInto.dirExists:
+    if isEmpty(items(objs(buildsInto))):
         self.log("Building " & title)
         self.requireSh(dir, requireExe("make"))
 
@@ -91,7 +101,7 @@ proc archiveObjs*(self: Config, title: string, archivePath: string, getBuildDir:
     if not archivePath.fileExists:
         let dir = getBuildDir()
 
-        let objs = toSeq(walkPattern(dir / "*.o"))
+        let objs = objs(dir)
 
         self.log("Creating archive for " & title, "Location: " & archivePath)
 
