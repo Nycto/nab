@@ -86,12 +86,8 @@ proc objs*(dir: string): seq[string] =
     ## Returns a list of object files in a directory
     toSeq(walkPattern(dir / "*.o"))
 
-proc configureAndMake*(self: Config, title: string, dir: string, buildsInto: string, env: StringTableRef = nil): string =
-    ## runs configure, then runs make in a directory
-
-    result = buildsInto
-
-    # Configure the make file
+proc configure*(self: Config, title: string, dir: string, args: openarray[string] = [], env: StringTableRef = nil) =
+    ## Runs the configure command
     if not fileExists(dir / "Makefile"):
         self.log("Configuring build for " & title)
         let configurePath = dir / "configure"
@@ -100,12 +96,20 @@ proc configureAndMake*(self: Config, title: string, dir: string, buildsInto: str
         if FilePermission.fpUserExec notin permissions:
             configurePath.setFilePermissions(permissions + { FilePermission.fpUserExec })
 
-        self.requireSh(dir, env, configurePath)
+        self.requireSh(dir, env, configurePath, args)
 
+proc make*(self: Config, title: string, dir: string, buildsInto: string): string =
     # Call 'make' if the build output dir doesn't exist
+    result = buildsInto
     if isEmpty(items(objs(buildsInto))):
         self.log("Building " & title)
-        self.requireSh(dir, env, requireExe("make"))
+        self.requireSh(dir, requireExe("make"))
+
+proc configureAndMake*(self: Config, title: string, dir: string, buildsInto: string): string =
+    ## runs configure, then runs make in a directory
+
+    self.configure(title, dir)
+    return self.make(title, dir, buildsInto)
 
 proc archiveObjs*(self: Config, title: string, archivePath: string, getBuildDir: proc(): string): string =
     ## Creates an archive of *.o objects in a directory

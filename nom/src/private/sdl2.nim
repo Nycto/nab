@@ -33,7 +33,8 @@ proc makeSdl2(self: Sdl2Module, conf: Config): string =
 
         # Call `configure` and call `make`, record the build directory
         let sdl2Source = self.sdl2source(conf)
-        conf.configureAndMake("SDL2", sdl2Source, sdl2Source / "build")
+        conf.configure("SDL2", sdl2Source, [ "--prefix", conf.sdl2InstallDir ])
+        conf.make("SDL2", sdl2Source, sdl2Source / "build")
 
 proc installSdl2(self: Sdl2Module, conf: Config): string =
     ## Runs 'make install' for SDL2
@@ -75,26 +76,29 @@ proc sdl2gfx(self: Sdl2Module, conf: Config): string =
 
         # Call `configure` and call `make`, record the build directory
         let src = self.sdl2gfxSource(conf)
-        let sdl2InstallDir = self.installSdl2(conf)
-        conf.configureAndMake("SDL2_gfx", src, src, newStringTable({ "PREFIX": sdl2InstallDir, "SDL_CONFIG": sdl2InstallDir / "bin/sdl2-config" }))
+        conf.configure("SDL2_gfx", src, [ "SDL_CONFIG=" & self.installSdl2(conf) / "bin/sdl2-config" ])
+        conf.make("SDL2_gfx", src, src)
 
 proc flags(self: Sdl2Module, conf: Config): seq[string] =
     ## Returns the compiler flags to use
-    let common = @[
-        "--threads:on",
-        "--dynlibOverride:SDL2",
-        "--passL:-lSDL2",
-        "--passL:-lm",
-        "--dynlibOverride:SDL2_gfx",
-        "--passL:-lSDL2_gfx",
-        "--passL:" & self.sdl2gfx(conf) ]
-
     result =
         case conf.platform
-        of Platform.Linux: common.concat(@[ "--passL:" & self.makeSdl2(conf), "--passL:-lsndio" ])
+        of Platform.Linux:
+            @[
+                "--passL:" & self.makeSdl2(conf),
+                "--passL:" & self.sdl2gfx(conf),
+                "--passL:-lsndio",
+                "--threads:on",
+                "--dynlibOverride:SDL2",
+                "--dynlibOverride:SDL2_gfx",
+                "--passL:-lm" ]
         of Platform.MacOS:
-            common.concat(@[
+            @[
                 "--passL:" & self.xcodeSdl2(conf),
+                "--passL:" & self.sdl2gfx(conf),
+                "--threads:on",
+                "--dynlibOverride:SDL2",
+                "--dynlibOverride:SDL2_gfx",
                 "--passL:-liconv",
                 "--passL:'-framework CoreAudio'",
                 "--passL:'-framework AudioToolbox'",
@@ -108,7 +112,7 @@ proc flags(self: Sdl2Module, conf: Config): seq[string] =
                 "--passL:'-framework Carbon'",
                 "--passL:'-framework CoreServices'",
                 "--passL:'-framework ApplicationServices'",
-                "--passL:'-framework Metal'" ])
+                "--passL:'-framework Metal'" ]
 
 proc newSdl2Module*(conf: Config): Module =
     let self = Sdl2Module(sdl2Version: "2.0.9", sdl2gfxVersion: "1.0.4")
