@@ -9,7 +9,7 @@ proc sdl2source(self: Sdl2Module, conf: Config): string =
     ## Returns the location of the unzipped SDL2 source, downloading and unzipping if necessary
 
     # Unzip the file, downloading it if it doesn't exist
-    let unzippedTo = conf.unzip("SDL2", conf.buildDir / "sdl2") do () -> string:
+    let unzippedTo = conf.unzip("SDL2", conf.platformBuildDir / "sdl2") do () -> string:
         conf.download("SDL2",
             "https://www.libsdl.org/release/SDL2-" & self.sdl2Version & ".zip",
             conf.buildDir / "sdl2.zip"
@@ -20,11 +20,11 @@ proc sdl2source(self: Sdl2Module, conf: Config): string =
 
 proc sdl2ArchivePath(self: Config): string =
     ## Returns the location of the '.a' file for SDL2
-    self.buildDir / "sdl2.a"
+    self.platformBuildDir / "sdl2.a"
 
 proc sdl2InstallDir(conf: Config): string =
     ## The installation dir for SDL
-    result = conf.buildDir / "sdl2_install"
+    result = conf.platformBuildDir / "sdl2_install"
 
 proc makeSdl2(self: Sdl2Module, conf: Config): string =
     ## Builds SDL2 using make and returns the resulting .a file
@@ -49,7 +49,7 @@ proc xcodeSdl2(self: Sdl2Module, conf: Config): string =
     result = conf.sdl2ArchivePath
     if not result.fileExists:
         conf.requireSh(
-            conf.buildDir,
+            conf.platformBuildDir,
             requireExe("xcodebuild"),
             "-project", self.sdl2source(conf) / "Xcode/SDL/SDL.xcodeproj",
             "-configuration", "Release",
@@ -60,10 +60,10 @@ proc sdl2gfxSource(self: Sdl2Module, conf: Config): string =
     ## Returns the location of the unzipped SDL2_gfx source, downloading and unzipping if necessary
 
     # Unzip the file, downloading it if it doesn't exist
-    let unzippedTo = conf.unzip("SDL2_gfx", conf.buildDir / "sdl2_gfx") do () -> auto:
+    let unzippedTo = conf.unzip("SDL2_gfx", conf.platformBuildDir / "sdl2_gfx") do () -> auto:
         conf.download("SDL2_gfx",
             "http://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-" & self.sdl2gfxVersion & ".zip",
-            conf.buildDir / "sdl2_gfx.zip"
+            conf.platformBuildDir / "sdl2_gfx.zip"
         )
 
     # The zip file itself contains a directory, which is ultimately what we care about
@@ -72,7 +72,7 @@ proc sdl2gfxSource(self: Sdl2Module, conf: Config): string =
 proc sdl2gfx(self: Sdl2Module, conf: Config): string =
     ## Builds SDL2 and returns the resulting .a file
 
-    return conf.archiveObjs("SDL2_gfx", conf.buildDir / "sdl2_gfx.a") do () -> auto:
+    return conf.archiveObjs("SDL2_gfx", conf.platformBuildDir / "sdl2_gfx.a") do () -> auto:
 
         # Call `configure` and call `make`, record the build directory
         let src = self.sdl2gfxSource(conf)

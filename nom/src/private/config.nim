@@ -16,6 +16,11 @@ type
         extraFlags*: seq[string]
         verbose*: bool
 
+proc platformBuildDir*(self: Config): string =
+    ## A directory for platform specific builds
+    result = self.buildDir / $self.platform
+    result.ensureDir
+
 proc flags *(self: Platform): seq[string] =
     ## Returns the compiler flags to pass for a platform build
     case self
