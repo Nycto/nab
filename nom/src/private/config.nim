@@ -1,4 +1,4 @@
-import util, httpclient, os, strutils, osproc, sequtils, system
+import util, httpclient, os, strutils, osproc, sequtils, system, strtabs
 
 type
     Platform* = enum
@@ -42,7 +42,7 @@ proc requireExe*(command: string): string =
     result = findExe(command)
     if result == "": raise newException(OSError, "Could not find command: " & command)
 
-proc requireSh*(self: Config, dir: string, command: string, args: varargs[string, `$`]) =
+proc requireSh*(self: Config, dir: string, env: StringTableRef, command: string, args: varargs[string, `$`]) =
     ## Executes a shell command and throws if it fails
     let fullCommand = command & " " & args.join(" ")
     self.debug("Executing shell command", fullCommand)
@@ -50,10 +50,14 @@ proc requireSh*(self: Config, dir: string, command: string, args: varargs[string
         command = command,
         args = args,
         workingDir = dir,
+        env = env,
         options = { poStdErrToStdOut, poParentStreams })
     if process.waitForExit() != 0:
         raise newException(OSError, "Command failed: " & fullCommand)
     self.debug("Command execution complete")
+
+proc requireSh*(self: Config, dir: string, command: string, args: varargs[string, `$`]) =
+    requireSh(self, dir, nil, command, args)
 
 proc download*(self: Config, title: string, url: string, to: string): string =
     ## Downloads a file
@@ -82,7 +86,7 @@ proc objs*(dir: string): seq[string] =
     ## Returns a list of object files in a directory
     toSeq(walkPattern(dir / "*.o"))
 
-proc configureAndMake*(self: Config, title: string, dir: string, buildsInto: string): string =
+proc configureAndMake*(self: Config, title: string, dir: string, buildsInto: string, env: StringTableRef = nil): string =
     ## runs configure, then runs make in a directory
 
     result = buildsInto
