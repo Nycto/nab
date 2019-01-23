@@ -22,6 +22,10 @@ proc sdl2ArchivePath(self: Config): string =
     ## Returns the location of the '.a' file for SDL2
     self.buildDir / "sdl2.a"
 
+proc sdl2InstallDir(conf: Config): string =
+    ## The installation dir for SDL
+    result = conf.buildDir / "sdl2_install"
+
 proc makeSdl2(self: Sdl2Module, conf: Config): string =
     ## Builds SDL2 using make and returns the resulting .a file
 
@@ -33,16 +37,11 @@ proc makeSdl2(self: Sdl2Module, conf: Config): string =
 
 proc installSdl2(self: Sdl2Module, conf: Config): string =
     ## Runs 'make install' for SDL2
-    result = conf.buildDir / "sdl2_install"
+    result = conf.sdl2InstallDir
     if not result.dirExists:
         let sdl2Source = self.sdl2source(conf)
         discard self.makeSdl2(conf)
-
-        conf.requireSh(
-            sdl2Source,
-            requireExe("make"),
-            "install",
-            "prefix=" & result)
+        conf.requireSh(sdl2Source, requireExe("make"), "install")
 
 proc xcodeSdl2(self: Sdl2Module, conf: Config): string =
     ## Builds SDL2 using xcode and returns the resulting .a file
@@ -77,7 +76,7 @@ proc sdl2gfx(self: Sdl2Module, conf: Config): string =
         # Call `configure` and call `make`, record the build directory
         let src = self.sdl2gfxSource(conf)
         let sdl2InstallDir = self.installSdl2(conf)
-        conf.configureAndMake("SDL2_gfx", src, src, newStringTable({ "SDL_PREFIX": sdl2InstallDir }))
+        conf.configureAndMake("SDL2_gfx", src, src, newStringTable({ "PREFIX": sdl2InstallDir, "SDL_CONFIG": sdl2InstallDir / "bin/sdl2-config" }))
 
 proc flags(self: Sdl2Module, conf: Config): seq[string] =
     ## Returns the compiler flags to use

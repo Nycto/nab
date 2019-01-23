@@ -100,12 +100,12 @@ proc configureAndMake*(self: Config, title: string, dir: string, buildsInto: str
         if FilePermission.fpUserExec notin permissions:
             configurePath.setFilePermissions(permissions + { FilePermission.fpUserExec })
 
-        self.requireSh(dir, configurePath)
+        self.requireSh(dir, env, configurePath)
 
     # Call 'make' if the build output dir doesn't exist
     if isEmpty(items(objs(buildsInto))):
         self.log("Building " & title)
-        self.requireSh(dir, requireExe("make"))
+        self.requireSh(dir, env, requireExe("make"))
 
 proc archiveObjs*(self: Config, title: string, archivePath: string, getBuildDir: proc(): string): string =
     ## Creates an archive of *.o objects in a directory
