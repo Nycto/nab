@@ -52,7 +52,6 @@ proc xcodeSdl2(self: Sdl2Module, conf: Config): string =
             conf.buildDir,
             requireExe("xcodebuild"),
             "-project", self.sdl2source(conf) / "Xcode/SDL/SDL.xcodeproj",
-            "-target", "Static\\ Library",
             "-configuration", "Release",
             "-sdk", "macosx" & conf.macOsSdkVersion,
             "SYMROOT=build")
