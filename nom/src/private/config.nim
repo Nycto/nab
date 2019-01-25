@@ -2,7 +2,7 @@ import util, httpclient, os, strutils, osproc, sequtils, system, strtabs
 
 type
     Platform* = enum
-        Linux, MacOS
+        Linux, MacOS, iOsSim
 
     Module* = object ## Modules that can inject settings into the build
         flags*: proc(): seq[string]
@@ -13,6 +13,7 @@ type
         platform*: Platform
         macOsSdkVersion*: string
         macOsMinVersion*: string
+        iOsSimSdkVersion*: string
         extraFlags*: seq[string]
         verbose*: bool
 
@@ -21,11 +22,27 @@ proc platformBuildDir*(self: Config): string =
     result = self.buildDir / $self.platform
     result.ensureDir
 
-proc flags *(self: Platform): seq[string] =
+proc xCodeAppPath(self: Config): string =
+    ## Where to find XCode
+    "/Applications/Xcode.app"
+
+proc iOsSimulatorSdkPath(self: Config): string =
+    ## The file path for the ios simulator SDK
+    let filename = "iPhoneSimulator" & self.iOsSimSdkVersion & ".sdk"
+    result = self.xCodeAppPath / "Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs" / filename
+
+proc flags *(self: Config): seq[string] =
     ## Returns the compiler flags to pass for a platform build
-    case self
+    case self.platform
     of Platform.Linux: @[ "--os:linux", "-d:linux" ]
     of Platform.MacOS: @[ "--os:macosx", "-d:macosx" ]
+    of Platform.iOsSim:
+        @[
+            "--cpu:amd64",
+            "-d:ios", "-d:simulator",
+            "--passC:-isysroot", "--passL:-isysroot",
+            "--passC:" & self.iOsSimulatorSdkPath, "--passL:" & self.iOsSimulatorSdkPath,
+            "--passL:-fobjc-link-runtime" ]
 
 proc log*(self: Config, messages: varargs[string, `$`]) =
     ## Logs an event to the console

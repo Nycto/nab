@@ -44,14 +44,14 @@ proc installSdl2(self: Sdl2Module, conf: Config): string =
         discard self.makeSdl2(conf)
         conf.requireSh(sdl2Source, requireExe("make"), "install")
 
-proc xcodeSdl2(self: Sdl2Module, conf: Config): string =
+proc xcodeSdl2(self: Sdl2Module, conf: Config, xcodeDir: string, sdkVersion: string): string =
     ## Builds SDL2 using xcode and returns the resulting .a file
     result = conf.sdl2ArchivePath
     if not result.fileExists:
         conf.requireSh(
             conf.platformBuildDir,
             requireExe("xcodebuild"),
-            "-project", self.sdl2source(conf) / "Xcode/SDL/SDL.xcodeproj",
+            "-project", self.sdl2source(conf) / xcodeDir / "SDL/SDL.xcodeproj",
             "-configuration", "Release",
             "-sdk", "macosx" & conf.macOsSdkVersion,
             "SYMROOT=build")
@@ -79,6 +79,27 @@ proc sdl2gfx(self: Sdl2Module, conf: Config): string =
         conf.configure("SDL2_gfx", src, [ "SDL_CONFIG=" & self.installSdl2(conf) / "bin/sdl2-config" ])
         conf.make("SDL2_gfx", src, src)
 
+let commonFlags = @[ ## Flags that should be appended to every target
+    "--threads:on",
+    "--dynlibOverride:SDL2",
+    "--dynlibOverride:SDL2_gfx" ]
+
+let macOsFlags = @[ ## Common flags for mac targets
+    "--passL:-liconv",
+    "--passL:'-framework CoreAudio'",
+    "--passL:'-framework AudioToolbox'",
+    "--passL:'-framework CoreGraphics'",
+    "--passL:'-framework QuartzCore'",
+    "--passL:'-framework OpenGL'",
+    "--passL:'-framework AppKit'",
+    "--passL:'-framework AudioUnit'",
+    "--passL:'-framework ForceFeedback'",
+    "--passL:'-framework IOKit'",
+    "--passL:'-framework Carbon'",
+    "--passL:'-framework CoreServices'",
+    "--passL:'-framework ApplicationServices'",
+    "--passL:'-framework Metal'" ]
+
 proc flags(self: Sdl2Module, conf: Config): seq[string] =
     ## Returns the compiler flags to use
     result =
@@ -88,31 +109,21 @@ proc flags(self: Sdl2Module, conf: Config): seq[string] =
                 "--passL:" & self.makeSdl2(conf),
                 "--passL:" & self.sdl2gfx(conf),
                 "--passL:-lsndio",
-                "--threads:on",
-                "--dynlibOverride:SDL2",
-                "--dynlibOverride:SDL2_gfx",
                 "--passL:-lm" ]
         of Platform.MacOS:
             @[
-                "--passL:" & self.xcodeSdl2(conf),
+                "--passL:" & self.xcodeSdl2(conf, "Xcode", "macosx" & conf.macOsSdkVersion),
                 "--passL:" & self.sdl2gfx(conf),
-                "--threads:on",
-                "--dynlibOverride:SDL2",
-                "--dynlibOverride:SDL2_gfx",
-                "--passL:-liconv",
-                "--passL:'-framework CoreAudio'",
-                "--passL:'-framework AudioToolbox'",
-                "--passL:'-framework CoreGraphics'",
-                "--passL:'-framework QuartzCore'",
-                "--passL:'-framework OpenGL'",
-                "--passL:'-framework AppKit'",
-                "--passL:'-framework AudioUnit'",
-                "--passL:'-framework ForceFeedback'",
-                "--passL:'-framework IOKit'",
-                "--passL:'-framework Carbon'",
-                "--passL:'-framework CoreServices'",
-                "--passL:'-framework ApplicationServices'",
-                "--passL:'-framework Metal'" ]
+                "--passL:-liconv"
+            ].concat(macOsFlags)
+        of Platform.iOsSim:
+            @[
+                "--passL:" & self.xcodeSdl2(conf, "Xcode-iOS", "iphonesimulator" & conf.iOsSimSdkVersion),
+                "--passL:" & self.sdl2gfx(conf),
+                "--passL:-liconv"
+            ].concat(macOsFlags)
+
+    result.add(commonFlags)
 
 proc newSdl2Module*(conf: Config): Module =
     let self = Sdl2Module(sdl2Version: "2.0.9", sdl2gfxVersion: "1.0.4")

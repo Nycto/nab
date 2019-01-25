@@ -21,6 +21,7 @@ proc parseCli(): Config =
         platform: Platform.Linux,
         macOsSdkVersion: "10.14",
         macOsMinVersion: "10.14",
+        iOsSimSdkVersion: "8.1",
         extraFlags: @[],
         verbose: false
     )
@@ -49,7 +50,7 @@ handleException(conf):
     ]
 
     # Collect the arguments to pass to nimble
-    var args = concat(@[ "build" ], conf.platform.flags(), conf.extraFlags)
+    var args = concat(@[ "build" ], conf.flags(), conf.extraFlags)
     for module in modules:
         args.add(module.flags())
 
