@@ -1,4 +1,4 @@
-import config, util, os, sequtils, options, strtabs
+import config, configutil, util, os, sequtils, options, strtabs
 
 type
     Sdl2Module* = ref object
