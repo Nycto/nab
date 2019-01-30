@@ -15,11 +15,15 @@ template handleException(conf: Config, exec: untyped): untyped =
 proc parseCli(): Config =
     ## Parses the CLI options into a config
 
+    let defaultPlatform =
+        when defined(macosx): Platform.MacOS
+        else: Platform.Linux
+
     # General configuration
     result = Config(
         sourceDir: getCurrentDir(),
         buildDir: getCurrentDir() / "build",
-        platform: Platform.Linux,
+        platform: defaultPlatform,
         macOsSdkVersion: "10.14",
         macOsMinVersion: "10.14",
         iOsSimSdkVersion: "8.1",
