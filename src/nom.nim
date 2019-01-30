@@ -1,4 +1,4 @@
-import src/private/config, src/private/configutil, src/private/sdl2
+import private/config, private/configutil, private/sdl2
 import os, sequtils, parseopt, strutils
 
 template handleException(conf: Config, exec: untyped): untyped =
