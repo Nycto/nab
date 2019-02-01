@@ -1,4 +1,4 @@
-import config, util, mac
+import config, util
 import httpclient, os, strutils, osproc, sequtils, system, strtabs
 
 proc platformBuildDir*(self: Config): string =
@@ -6,12 +6,10 @@ proc platformBuildDir*(self: Config): string =
     result = self.buildDir / $self.platform
     result.ensureDir
 
-proc flags *(self: Config): seq[string] =
-    ## Returns the compiler flags to pass for a platform build
-    case self.platform
-    of Platform.Linux: @[ "--os:linux", "-d:linux" ]
-    of Platform.MacOS: @[ "--os:macosx", "-d:macosx" ]
-    of Platform.iOsSim: self.iOsSimFlags()
+proc appDir*(self: Config): string =
+    ## The directory in which to put content to be bundled
+    result = self.platformBuildDir / self.appName
+    result.ensureDir
 
 proc log*(self: Config, messages: varargs[string, `$`]) =
     ## Logs an event to the console

@@ -1,4 +1,4 @@
-import os
+import os, streams, parsecfg
 
 proc ensureDir*(path: string) =
     ## Guarantees a directory exists
@@ -28,3 +28,24 @@ template isEmpty*(iter: untyped): bool =
         result = false
         break
     result
+
+iterator parseConfigFile*(path: string): tuple[section: string, key: string, value: string] =
+    ## Iterates over the events in a config file
+    var handle = newFileStream(path, fmRead)
+    if handle != nil:
+        defer: close(handle)
+
+        var parser: CfgParser
+        open(parser, handle, path)
+        defer: close(parser)
+
+        var section = ""
+        while true:
+            var event = next(parser)
+            case event.kind
+            of cfgEof: break
+            of cfgSectionStart: section = event.section
+            of cfgKeyValuePair: yield (section, event.key, event.value)
+            of cfgOption: yield (section, event.key, event.value)
+            of cfgError: assert(false, event.msg)
+

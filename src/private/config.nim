@@ -8,12 +8,16 @@ type
         flags*: proc(): seq[string]
 
     Config* = object ## Build configuration
-        sourceDir*: string
-        buildDir*: string
-        platform*: Platform
+        appName*: string            ## The name of this application. For example, "MyApp"
+        bundleId*: string           ## The namespace of this application. For example, "com.example.MyApp"
+        version*: string            ## The version of this release. For example, "1.0.0"
+        buildTime*: string          ## The time at which this build was performed
+        sourceDir*: string          ## Where to find the source code being compiled
+        buildDir*: string           ## Where to put all build artifacts
+        platform*: Platform         ## The platform being targetted
         macOsSdkVersion*: string
         macOsMinVersion*: string
         iOsSimSdkVersion*: string
-        extraFlags*: seq[string]
-        verbose*: bool
+        extraFlags*: seq[string]    ## Additional flags to pass to the nim compiler
+        verbose*: bool              ## Whether to display detailed build information
 

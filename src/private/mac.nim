@@ -1,4 +1,4 @@
-import config, os, util, pegs
+import config, os, util, pegs, infoplist
 
 type MacSdk = enum
     ## Mac SDKs that can be targeted for compilation
@@ -41,8 +41,8 @@ proc sdkPath*(self: Config, sdk: MacSdk): string =
 proc iOsSimFlags*(self: Config): seq[string] =
     ## Compiler flags for compiling for the ios simulator
     @[
-        "--cpu:amd64",
+        "--cpu:amd64", "--noMain",
         "-d:ios", "-d:simulator",
-        "--passC:-isysroot", "--passL:-isysroot",
-        "--passC:" & self.sdkPath(MacSdk.iPhoneSim), "--passL:" & self.sdkPath(MacSdk.iPhoneSim),
+        "--passC:-isysroot " & self.sdkPath(MacSdk.iPhoneSim),
+        "--passL:-isysroot " & self.sdkPath(MacSdk.iPhoneSim),
         "--passL:-fobjc-link-runtime" ]
