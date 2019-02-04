@@ -60,12 +60,17 @@ proc readConfig(): Config =
 
         result.parseCli()
 
-proc flags(self: Config): seq[string] =
+        discard result.appName.requireNotEmpty("appName", "Add 'appName' to your config, or pass it via --appName")
+        discard result.bundleId.requireNotEmpty("bundleId", "Add 'bundleId' to your config, or pass it via --bundleId")
+        discard result.version.requireNotEmpty("version", "Add 'version' to your config, or pass it via --version")
+        discard result.buildDir.requireNotEmpty("buildDir", "Add 'buildDir' to your config, or pass it via --buildDir")
+
+proc compileConfig(self: Config): CompileConfig =
     ## Returns the compiler flags to pass for a platform build
     case self.platform
-    of Platform.Linux: @[ "--os:linux", "-d:linux" ]
-    of Platform.MacOS: @[ "--os:macosx", "-d:macosx" ]
-    of Platform.iOsSim: self.iOsSimFlags()
+    of Platform.Linux: CompileConfig(flags: @[ "--os:linux", "-d:linux" ], binPath: self.appName)
+    of Platform.MacOS: CompileConfig(flags: @[ "--os:macosx", "-d:macosx" ], binPath: self.appName)
+    of Platform.iOsSim: self.iOsSimCompileConfig()
 
 
 # General configuration
@@ -78,10 +83,16 @@ handleException(conf):
         newSdl2Module(conf)
     ]
 
+    let compile = conf.compileConfig()
+
     # Collect the arguments to pass to nimble
-    var args = concat(@[ "build" ], conf.flags(), conf.extraFlags)
+    var args = concat(@[ "build" ], compile.flags, conf.extraFlags)
     for module in modules:
         args.add(module.flags())
+
+    # Define where to put the resulting binary
+    compile.binPath.requireNotEmpty("binPath", "This is an internal error").ensureParentDir
+    args.add("--out:" & compile.binPath)
 
     # Invoke nimble
     conf.requireSh(conf.sourceDir, requireExe("nimble"), args)

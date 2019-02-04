@@ -21,3 +21,6 @@ type
         extraFlags*: seq[string]    ## Additional flags to pass to the nim compiler
         verbose*: bool              ## Whether to display detailed build information
 
+    CompileConfig* = object ## Platform configuration for the compiler
+        flags*: seq[string]  ## Flags to pass to the nim compiler
+        binPath*: string     ## Where to put the executable file

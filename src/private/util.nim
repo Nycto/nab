@@ -13,13 +13,13 @@ proc requireDir*(path: string): string =
     ## Requires that a directory exists or throws
     result = path
     if not path.dirExists:
-        raise newException(OSError, "Directory does not exist: " & path)
+        raise newException(AssertionError, "Directory does not exist: " & path)
 
 proc requireFile*(path: string): string =
     ## Requires that a file exists or throws
     result = path
     if not path.fileExists:
-        raise newException(OSError, "File does not exist: " & path)
+        raise newException(AssertionError, "File does not exist: " & path)
 
 template isEmpty*(iter: untyped): bool =
     ## Whether an iterator is empty
@@ -28,6 +28,13 @@ template isEmpty*(iter: untyped): bool =
         result = false
         break
     result
+
+proc requireNotEmpty*(self: string, name: string, message: string): string =
+    ## Requires that a string isn't empty, or throws
+    if (self.len == 0):
+        raise newException(AssertionError, name & " should not be empty. " & message)
+    return self
+
 
 iterator parseConfigFile*(path: string): tuple[section: string, key: string, value: string] =
     ## Iterates over the events in a config file
