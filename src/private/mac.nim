@@ -36,7 +36,7 @@ proc sdkPath*(self: Config, sdk: MacSdk): string =
     ## The file path for a specific SDK
     let filename = sdk.dirName & self.sdkVersion(MacSdk.iPhoneSim) & ".sdk"
     result = self.xCodeSdksPath(sdk) / filename
-    discard result.requireFile
+    discard result.requireDir
 
 proc iOsSimCompileConfig*(self: Config): CompileConfig =
     ## Compiler flags for compiling for the ios simulator
