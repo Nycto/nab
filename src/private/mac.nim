@@ -38,10 +38,13 @@ proc sdkVersion*(self: Config, sdk: MacSdk): string =
 
     raise newException(OSError, "Could not find any SDKs. Searched in " & searchDir)
 
+proc sdkNameVersion*(self: Config, sdk: MacSdk): string =
+    ## Returns the name/version form of an sdk
+    sdk.dirName & self.sdkVersion(sdk)
+
 proc sdkPath*(self: Config, sdk: MacSdk): string =
     ## The file path for a specific SDK
-    let filename = sdk.dirName & self.sdkVersion(MacSdk.iPhoneSim) & ".sdk"
-    result = self.xCodeSdksPath(sdk) / filename
+    result = self.xCodeSdksPath(sdk) / (self.sdkNameVersion(sdk) & ".sdk")
     discard result.requireDir
 
 proc iOsSimCompileConfig*(self: Config): CompileConfig =
