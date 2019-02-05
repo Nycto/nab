@@ -1,6 +1,6 @@
 import config, os, util, pegs, infoplist, configutil
 
-type MacSdk = enum
+type MacSdk* = enum
     ## Mac SDKs that can be targeted for compilation
     iPhone,
     iPhoneSim
@@ -11,6 +11,12 @@ proc dirName(sdk: MacSdk): string =
     of MacSdk.iPhone: "iPhoneOS"
     of MacSdk.iPhoneSim: "iPhoneSimulator"
 
+proc macSdk*(self: Config): MacSdk =
+    ## Given an SDK, returns the file system name used for it
+    case self.platform
+    of Platform.iOsSim: MacSdk.iPhoneSim
+    of Platform.MacOs, Platform.Linux: raise newException(AssertionError, "Could not determine mac sdk from platform")
+
 proc xCodeAppPath*(self: Config): string =
     ## Where to find XCode
     "/Applications/Xcode.app"
@@ -20,7 +26,7 @@ proc xCodeSdksPath(self: Config, sdk: MacSdk): string =
     result = self.xCodeAppPath / "Contents/Developer/Platforms/" & sdk.dirName & ".platform/Developer/SDKs"
     discard result.requireDir
 
-proc sdkVersion(self: Config, sdk: MacSdk): string =
+proc sdkVersion*(self: Config, sdk: MacSdk): string =
     ## Returns the highest installed SDK version
     let searchDir = self.xCodeSdksPath(sdk)
 

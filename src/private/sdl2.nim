@@ -1,4 +1,4 @@
-import config, configutil, util, os, sequtils, options, strtabs
+import config, configutil, util, os, sequtils, options, strtabs, mac
 
 type
     Sdl2Module* = ref object
@@ -53,7 +53,7 @@ proc xcodeSdl2(self: Sdl2Module, conf: Config, xcodeDir: string, sdkVersion: str
             requireExe("xcodebuild"),
             "-project", self.sdl2source(conf) / xcodeDir / "SDL/SDL.xcodeproj",
             "-configuration", "Release",
-            "-sdk", "macosx" & conf.macOsSdkVersion,
+            "-sdk", self.sdkVersion(self.macSdk),
             "SYMROOT=build")
 
 proc sdl2gfxSource(self: Sdl2Module, conf: Config): string =
