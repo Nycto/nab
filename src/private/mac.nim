@@ -1,4 +1,4 @@
-import config, os, util, pegs, infoplist, configutil
+import config, os, util, pegs, infoplist, configutil, strutils
 
 type MacSdk* = enum
     ## Mac SDKs that can be targeted for compilation
