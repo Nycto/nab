@@ -53,8 +53,8 @@ proc iOsSimCompileConfig*(self: Config): CompileConfig =
         flags: @[
             "--cpu:amd64", "--noMain",
             "-d:ios", "-d:simulator",
-            "--passC:-isysroot " & self.sdkPath(MacSdk.iPhoneSim),
-            "--passL:-isysroot " & self.sdkPath(MacSdk.iPhoneSim),
+            "--passC:'-isysroot " & self.sdkPath(MacSdk.iPhoneSim) & "'",
+            "--passL:'-isysroot " & self.sdkPath(MacSdk.iPhoneSim) & "'",
             "--passL:-fobjc-link-runtime" ],
         binPath: self.appDir / self.appName
     )
