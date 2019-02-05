@@ -40,11 +40,11 @@ proc sdkVersion*(self: Config, sdk: MacSdk): string =
 
 proc sdkNameVersion*(self: Config, sdk: MacSdk): string =
     ## Returns the name/version form of an sdk
-    sdk.dirName & self.sdkVersion(sdk)
+    sdk.dirName.toLowerAscii & self.sdkVersion(sdk)
 
 proc sdkPath*(self: Config, sdk: MacSdk): string =
     ## The file path for a specific SDK
-    result = self.xCodeSdksPath(sdk) / (self.sdkNameVersion(sdk) & ".sdk")
+    result = self.xCodeSdksPath(sdk) / (sdk.dirName & self.sdkVersion(sdk) & ".sdk")
     discard result.requireDir
 
 proc iOsSimCompileConfig*(self: Config): CompileConfig =
