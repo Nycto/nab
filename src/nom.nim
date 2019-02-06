@@ -89,6 +89,11 @@ handleException(conf):
     var args = concat(@[ "build" ], compile.flags, conf.extraFlags)
     for module in modules:
         args.add(module.flags())
+        args.add(module.compilerFlags().mapIt("--passC:" & it))
+        args.add(module.linkerFlags().mapIt("--passL:" & it))
+
+    args.add(compile.compilerFlags.mapIt("--passC:" & it))
+    args.add(compile.linkerFlags.mapIt("--passL:" & it))
 
     # Define where to put the resulting binary
     compile.binPath.requireNotEmpty("binPath", "This is an internal error").ensureParentDir

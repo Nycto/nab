@@ -6,6 +6,8 @@ type
 
     Module* = object ## Modules that can inject settings into the build
         flags*: proc(): seq[string]
+        linkerFlags*: proc(): seq[string]
+        compilerFlags*: proc(): seq[string]
 
     Config* = object ## Build configuration
         appName*: string            ## The name of this application. For example, "MyApp"
@@ -22,5 +24,7 @@ type
         verbose*: bool              ## Whether to display detailed build information
 
     CompileConfig* = object ## Platform configuration for the compiler
-        flags*: seq[string]  ## Flags to pass to the nim compiler
-        binPath*: string     ## Where to put the executable file
+        flags*: seq[string]             ## Flags to pass to the nim compiler
+        linkerFlags*: seq[string]       ## Flags to pass to the linker
+        compilerFlags*: seq[string]     ## Flags to pass to the compiler
+        binPath*: string                ## Where to put the executable file

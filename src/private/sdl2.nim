@@ -79,58 +79,26 @@ proc sdl2gfx(self: Sdl2Module, conf: Config): string =
         conf.configure("SDL2_gfx", src, [ "SDL_CONFIG=" & self.installSdl2(conf) / "bin/sdl2-config" ])
         conf.make("SDL2_gfx", src, src)
 
-let commonFlags = @[ ## Flags that should be appended to every target
-    "--threads:on",
-    "--dynlibOverride:SDL2",
-    "--dynlibOverride:SDL2_gfx" ]
-
-let macOsFlags = @[ ## Common flags for mac targets
-    "--passL:-liconv",
-    "--passL:'-framework CoreAudio'",
-    "--passL:'-framework AudioToolbox'",
-    "--passL:'-framework CoreGraphics'",
-    "--passL:'-framework QuartzCore'",
-    "--passL:'-framework OpenGL'",
-    "--passL:'-framework AppKit'",
-    "--passL:'-framework AudioUnit'",
-    "--passL:'-framework ForceFeedback'",
-    "--passL:'-framework IOKit'",
-    "--passL:'-framework Carbon'",
-    "--passL:'-framework CoreServices'",
-    "--passL:'-framework ApplicationServices'",
-    "--passL:'-framework Metal'" ]
-
-proc flags(self: Sdl2Module, conf: Config): seq[string] =
+proc linkerFlags(self: Sdl2Module, conf: Config): seq[string] =
     ## Returns the compiler flags to use
-    result =
-        case conf.platform
-        of Platform.Linux:
-            @[
-                "--passL:" & self.makeSdl2(conf),
-                "--passL:" & self.sdl2gfx(conf),
-                "--passL:-lsndio",
-                "--passL:-lm" ]
-        of Platform.MacOS:
-            @[
-                "--passL:" & self.xcodeSdl2(conf, "Xcode", "macosx" & conf.macOsSdkVersion),
-                "--passL:" & self.sdl2gfx(conf),
-                "--passL:-liconv"
-            ].concat(macOsFlags)
-        of Platform.iOsSim:
-            @[
-                "--passL:" & self.xcodeSdl2(conf, "Xcode-iOS", "iphonesimulator" & conf.iOsSimSdkVersion),
-                "--passL:" & self.sdl2gfx(conf),
-                "--passL:-liconv"
-            ].concat(macOsFlags)
-
-    result.add(commonFlags)
+    case conf.platform
+    of Platform.Linux:
+        @[ self.makeSdl2(conf), self.sdl2gfx(conf), "-lsndio", "-lm" ]
+    of Platform.MacOS:
+        @[
+            self.xcodeSdl2(conf, "Xcode", "macosx" & conf.macOsSdkVersion),
+            self.sdl2gfx(conf) ]
+    of Platform.iOsSim:
+        @[
+            self.xcodeSdl2(conf, "Xcode-iOS", "iphonesimulator" & conf.iOsSimSdkVersion),
+            self.sdl2gfx(conf) ]
 
 proc newSdl2Module*(conf: Config): Module =
     let self = Sdl2Module(sdl2Version: "2.0.9", sdl2gfxVersion: "1.0.4")
 
-    #let gfx = newSdl2GfxModule(conf)
-
     result = Module(
-        flags: proc(): auto = self.flags(conf)
+        flags: proc(): auto = @[ "--threads:on", "--dynlibOverride:SDL2", "--dynlibOverride:SDL2_gfx" ],
+        linkerFlags: proc(): auto = self.linkerFlags(conf),
+        compilerFlags: proc(): seq[string] = @[]
     )
 
