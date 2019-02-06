@@ -57,7 +57,8 @@ proc iOsSimCompileConfig*(self: Config): CompileConfig =
         ],
         compilerFlags: @[
             "-isysroot", self.sdkPath(MacSdk.iPhoneSim),
-            "-mios-version-min=" & self.sdkVersion(MacSdk.iPhoneSim)
+            "-mios-version-min=" & self.sdkVersion(MacSdk.iPhoneSim),
+            "-liconv"
         ],
         binPath: self.macAppDir / self.appName
     )
