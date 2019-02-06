@@ -23,7 +23,6 @@ proc requireNotEmpty*(self: string, name: string, message: string): string =
         raise newException(AssertionError, name & " should not be empty. " & message)
     return self
 
-
 iterator parseConfigFile*(path: string): tuple[section: string, key: string, value: string] =
     ## Iterates over the events in a config file
     var handle = newFileStream(path, fmRead)

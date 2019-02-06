@@ -1,4 +1,4 @@
-import config, os, util, pegs, infoplist, configutil, strutils
+import config, os, util, pegs, infoplist, configutil, strutils, nimble
 
 type MacSdk* = enum
     ## Mac SDKs that can be targeted for compilation
@@ -46,8 +46,18 @@ proc sdkPath*(self: Config, sdk: MacSdk): string =
     ## The file path for a specific SDK
     result = self.requireDir(self.xCodeSdksPath(sdk) / (sdk.dirName & self.sdkVersion(sdk) & ".sdk"))
 
+const customMain = staticRead("../../resources/main.nim")
+
+proc mainFile(self: Config): string =
+    ## Returns the path to the main custom main entry point
+    result = self.platformBuildDir / "nim" / "main.nim"
+    if not result.fileExists:
+        result.ensureParentDir
+        result.writeFile("import " & self.nimbleBin.importable & "\n" & customMain)
+
 proc iOsSimCompileConfig*(self: Config): CompileConfig =
     ## Compiler flags for compiling for the ios simulator
+    self.createPlist()
     result = CompileConfig(
         flags: @[ "--cpu:arm64", "--noMain", "-d:ios", "-d:simulator", "--os:macosx" ],
         linkerFlags: @[
@@ -60,6 +70,7 @@ proc iOsSimCompileConfig*(self: Config): CompileConfig =
             "-mios-version-min=" & self.sdkVersion(MacSdk.iPhoneSim),
             "-liconv"
         ],
-        binPath: self.macAppDir / self.appName
+        binOutputPath: self.macAppDir / self.appName,
+        binInputPath: self.mainFile
     )
 

@@ -1,4 +1,4 @@
-import private/config, private/configutil, private/sdl2, private/mac, private/util
+import private/config, private/configutil, private/sdl2, private/mac, private/util, private/nimble
 import os, sequtils, parseopt, strutils, times
 
 template handleException(conf: Config, exec: untyped): untyped =
@@ -69,9 +69,20 @@ proc readConfig(): Config =
 proc compileConfig(self: Config): CompileConfig =
     ## Returns the compiler flags to pass for a platform build
     case self.platform
-    of Platform.Linux: CompileConfig(flags: @[ "--os:linux", "-d:linux" ], binPath: self.appName)
-    of Platform.MacOS: CompileConfig(flags: @[ "--os:macosx", "-d:macosx" ], binPath: self.appName)
-    of Platform.iOsSim: self.iOsSimCompileConfig()
+    of Platform.Linux:
+        CompileConfig(
+            flags: @[ "--os:linux", "-d:linux" ],
+            binOutputPath: self.appName,
+            binInputPath: self.nimbleBin.absPath
+        )
+    of Platform.MacOS:
+        CompileConfig(
+            flags: @[ "--os:macosx", "-d:macosx" ],
+            binOutputPath: self.appName,
+            binInputPath: self.nimbleBin.absPath
+        )
+    of Platform.iOsSim:
+        self.iOsSimCompileConfig()
 
 
 # General configuration
@@ -86,8 +97,22 @@ handleException(conf):
 
     let compile = conf.compileConfig()
 
-    # Collect the arguments to pass to nimble
-    var args = concat(@[ "build" ], compile.flags, conf.extraFlags)
+    discard compile.binInputPath.requireNotEmpty("binInputPath", "This is an internal error")
+    discard conf.requireFile(compile.binInputPath)
+
+    # The arguments to pass to nimble
+    var args = @[ "c", compile.binInputPath ]
+
+    # Define where to put the resulting binary
+    compile.binOutputPath.requireNotEmpty("binOutputPath", "This is an internal error").ensureParentDir
+    args.add("--out:" & compile.binOutputPath)
+
+    # Keep the nimcache separate for each platform
+    args.add("--nimcache:" & conf.nimcacheDir)
+
+    args.add(compile.flags)
+    args.add(conf.extraFlags)
+
     for module in modules:
         args.add(module.flags())
         args.add(module.compilerFlags().mapIt("--passC:" & it))
@@ -95,12 +120,6 @@ handleException(conf):
 
     args.add(compile.compilerFlags.mapIt("--passC:" & it))
     args.add(compile.linkerFlags.mapIt("--passL:" & it))
-
-    # Define where to put the resulting binary
-    compile.binPath.requireNotEmpty("binPath", "This is an internal error").ensureParentDir
-    args.add("--out:" & compile.binPath)
-
-    args.add("--nimcache:" & conf.nimcacheDir)
 
     # Invoke nimble
     conf.requireSh(conf.sourceDir, conf.requireExe("nimble"), args)

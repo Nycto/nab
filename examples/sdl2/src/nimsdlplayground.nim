@@ -1,4 +1,4 @@
-import sdl2, sdl2/gfx, random
+import sdl2, random
 
 discard sdl2.init(INIT_EVERYTHING)
 
@@ -26,20 +26,3 @@ while runGame:
 
 destroy render
 destroy window
-
-
-
-{.emit: """
-//#include <SDL2/SDL_main.h>
-extern int cmdCount;
-extern char** cmdLine;
-extern char** gEnv;
-N_CDECL(void, NimMain)(void);
-int main(int argc, char *argv[]) {
-  cmdLine = argv;
-  cmdCount = argc;
-  gEnv = NULL;
-  NimMain();
-  return nim_program_result;
-}
-""".}

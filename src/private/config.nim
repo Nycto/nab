@@ -28,4 +28,5 @@ type
         flags*: seq[string]             ## Flags to pass to the nim compiler
         linkerFlags*: seq[string]       ## Flags to pass to the linker
         compilerFlags*: seq[string]     ## Flags to pass to the compiler
-        binPath*: string                ## Where to put the executable file
+        binInputPath*: string           ## The primary entry point for the app
+        binOutputPath*: string          ## Where to put the executable file

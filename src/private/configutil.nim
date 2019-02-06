@@ -140,3 +140,4 @@ proc archiveObjs*(self: Config, title: string, archivePath: string, getBuildDir:
         self.requireSh(self.buildDir, self.requireExe("ar"), concat(@["rcs", archivePath], objs))
 
     self.debug title & " archive location: " & archivePath
+
