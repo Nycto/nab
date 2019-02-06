@@ -46,12 +46,21 @@ proc installSdl2(self: Sdl2Module, conf: Config): string =
 
 proc xcodeSdl2(self: Sdl2Module, conf: Config, xcodeDir: string, sdkVersion: string): string =
     ## Builds SDL2 using xcode and returns the resulting .a file
-    result = conf.sdl2ArchivePath
+
+    let fullXcodePath = self.sdl2source(conf) / xcodeDir / "SDL"
+
+    let releaseSubdir =
+        case conf.platform
+        of Platform.iOsSim: "Release-iphonesimulator"
+        else: raise newException(AssertionError, "Platform does not support xcode builds of sdl2: " & $conf.platform)
+
+    result = fullXcodePath / "build/SDL.build" / releaseSubdir / "libSDL2.a"
+
     if not result.fileExists:
         conf.requireSh(
             conf.platformBuildDir,
             conf.requireExe("xcodebuild"),
-            "-project", self.sdl2source(conf) / xcodeDir / "SDL/SDL.xcodeproj",
+            "-project", fullXcodePath / "SDL.xcodeproj",
             "-configuration", "Release",
             "-sdk", conf.sdkNameVersion(conf.macSdk),
             "SYMROOT=build")
