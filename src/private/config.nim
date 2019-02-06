@@ -18,9 +18,6 @@ type
         sourceDir*: string          ## Where to find the source code being compiled
         buildDir*: string           ## Where to put all build artifacts
         platform*: Platform         ## The platform being targetted
-        macOsSdkVersion*: string
-        macOsMinVersion*: string
-        iOsSimSdkVersion*: string
         extraFlags*: seq[string]    ## Additional flags to pass to the nim compiler
         verbose*: bool              ## Whether to display detailed build information
 

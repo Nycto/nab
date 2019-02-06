@@ -46,9 +46,6 @@ proc readConfig(): Config =
         sourceDir: getCurrentDir(),
         buildDir: getCurrentDir() / "build",
         platform: defaultPlatform,
-        macOsSdkVersion: "10.14",
-        macOsMinVersion: "10.14",
-        iOsSimSdkVersion: "8.1",
         extraFlags: @[],
         verbose: false
     )

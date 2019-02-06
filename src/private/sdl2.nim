@@ -60,10 +60,10 @@ proc linkerFlags(self: Sdl2Module, conf: Config): seq[string] =
     of Platform.Linux:
         @[ self.makeSdl2(conf), "-lsndio", "-lm" ]
     of Platform.MacOS:
-        @[ self.xcodeSdl2(conf, "Xcode", "macosx" & conf.macOsSdkVersion) ]
+        @[ self.xcodeSdl2(conf, "Xcode", conf.sdkNameVersion(MacSdk.MacOSX)) ]
     of Platform.iOsSim:
         @[
-            self.xcodeSdl2(conf, "Xcode-iOS", "iphonesimulator" & conf.iOsSimSdkVersion),
+            self.xcodeSdl2(conf, "Xcode-iOS", conf.sdkNameVersion(MacSdk.iPhoneSim)),
             "-framework", "OpenGLES", "-framework", "UIKit", "-framework", "GameController",
             "-framework", "CoreMotion", "-framework", "Metal", "-framework", "AVFoundation",
             "-framework", "AudioToolbox", "-framework", "CoreAudio", "-framework", "CoreGraphics",

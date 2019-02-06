@@ -3,19 +3,22 @@ import config, os, util, pegs, configutil, strutils, nimble, plists, streams, js
 type MacSdk* = enum
     ## Mac SDKs that can be targeted for compilation
     iPhone,
-    iPhoneSim
+    iPhoneSim,
+    MacOSX
 
 proc dirName(sdk: MacSdk): string =
     ## Given an SDK, returns the file system name used for it
     case sdk
     of MacSdk.iPhone: "iPhoneOS"
     of MacSdk.iPhoneSim: "iPhoneSimulator"
+    of MacSdk.MacOSX: "MacOSX"
 
 proc macSdk*(self: Config): MacSdk =
     ## Given an SDK, returns the file system name used for it
     case self.platform
     of Platform.iOsSim: MacSdk.iPhoneSim
-    of Platform.MacOs, Platform.Linux: raise newException(AssertionError, "Could not determine mac sdk from platform")
+    of Platform.MacOs: MacSdk.MacOSX
+    of Platform.Linux: raise newException(AssertionError, "Could not determine mac sdk from platform")
 
 proc xCodeAppPath*(self: Config): string =
     ## Where to find XCode
