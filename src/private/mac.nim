@@ -1,4 +1,4 @@
-import config, os, util, pegs, infoplist, configutil, strutils, nimble
+import config, os, util, pegs, configutil, strutils, nimble, plists, streams, json
 
 type MacSdk* = enum
     ## Mac SDKs that can be targeted for compilation
@@ -54,6 +54,19 @@ proc mainFile(self: Config): string =
     if not result.fileExists:
         result.ensureParentDir
         result.writeFile("import " & self.nimbleBin.importable & "\n" & customMain)
+
+const defaultInfoPlist = staticRead("../../resources/Info.plist")
+
+proc createPlist*(self: Config) =
+    ## Returns the JsonNode representint the Info.plist file
+    let plist = parsePlist(newStringStream(defaultInfoPlist))
+    plist["CFBundleName"] = %self.appName
+    plist["CFBundleIdentifier"] = %self.bundleId
+    plist["CFBundleExecutable"] = %self.appName
+    plist["CFBundleShortVersionString"] = %self.version
+    plist["CFBundleVersion"] = %self.buildTime
+
+    plist.writePlist(self.macAppDir / "Info.plist")
 
 proc iOsSimCompileConfig*(self: Config): CompileConfig =
     ## Compiler flags for compiling for the ios simulator
