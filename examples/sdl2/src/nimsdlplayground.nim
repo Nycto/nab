@@ -12,8 +12,6 @@ render = createRenderer(window, -1, Renderer_Accelerated or Renderer_PresentVsyn
 var
   evt = sdl2.defaultEvent
   runGame = true
-  fpsman: FpsManager
-fpsman.init
 
 while runGame:
   while pollEvent(evt):
@@ -21,14 +19,27 @@ while runGame:
       runGame = false
       break
 
-  let dt = fpsman.getFramerate() / 1000
-
   render.setDrawColor uint8(rand(255)), 0, 0, 255
   render.clear
 
   render.present
-  fpsman.delay
 
 destroy render
 destroy window
 
+
+
+{.emit: """
+//#include <SDL2/SDL_main.h>
+extern int cmdCount;
+extern char** cmdLine;
+extern char** gEnv;
+N_CDECL(void, NimMain)(void);
+int main(int argc, char *argv[]) {
+  cmdLine = argv;
+  cmdCount = argc;
+  gEnv = NULL;
+  NimMain();
+  return nim_program_result;
+}
+""".}

@@ -54,7 +54,7 @@ proc xcodeSdl2(self: Sdl2Module, conf: Config, xcodeDir: string, sdkVersion: str
         of Platform.iOsSim: "Release-iphonesimulator"
         else: raise newException(AssertionError, "Platform does not support xcode builds of sdl2: " & $conf.platform)
 
-    result = fullXcodePath / "build/SDL.build" / releaseSubdir / "libSDL2.a"
+    result = fullXcodePath / "build" / releaseSubdir / "libSDL2.a"
 
     if not result.fileExists:
         conf.requireSh(
@@ -98,7 +98,10 @@ proc linkerFlags(self: Sdl2Module, conf: Config): seq[string] =
     of Platform.iOsSim:
         @[
             self.xcodeSdl2(conf, "Xcode-iOS", "iphonesimulator" & conf.iOsSimSdkVersion),
-            self.sdl2gfx(conf) ]
+            "-framework", "OpenGLES", "-framework", "UIKit", "-framework", "GameController", 
+            "-framework", "CoreMotion", "-framework", "Metal", "-framework", "AVFoundation",
+            "-framework", "AudioToolbox", "-framework", "CoreAudio", "-framework", "CoreGraphics", "-framework", "QuartzCore"
+        ]
 
 proc newSdl2Module*(conf: Config): Module =
     let self = Sdl2Module(sdl2Version: "2.0.9", sdl2gfxVersion: "1.0.4")
