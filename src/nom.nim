@@ -100,6 +100,8 @@ handleException(conf):
     compile.binPath.requireNotEmpty("binPath", "This is an internal error").ensureParentDir
     args.add("--out:" & compile.binPath)
 
+    args.add("--nimcache:" & conf.nimcacheDir)
+
     # Invoke nimble
     conf.requireSh(conf.sourceDir, conf.requireExe("nimble"), args)
 

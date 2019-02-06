@@ -24,9 +24,13 @@ proc platformBuildDir*(self: Config): string =
     result = self.buildDir / $self.platform
     result.ensureDir
 
-proc appDir*(self: Config): string =
+proc nimcacheDir*(self: Config): string =
+    result = self.platformBuildDir / "nimcache"
+    result.ensureDir
+
+proc macAppDir*(self: Config): string =
     ## The directory in which to put content to be bundled
-    result = self.platformBuildDir / self.appName
+    result = self.platformBuildDir / self.appName & ".app"
     result.ensureDir
 
 proc log*(self: Config, messages: varargs[string, `$`]) =

@@ -49,5 +49,5 @@ proc createPlist*(self: Config) =
     plist["CFBundleShortVersionString"] = %self.version
     plist["CFBundleVersion"] = %self.buildTime
 
-    plist.writePlist(self.appDir() / "Info.plist")
+    plist.writePlist(self.macAppDir / "Info.plist")
 

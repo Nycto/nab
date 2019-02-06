@@ -49,11 +49,16 @@ proc sdkPath*(self: Config, sdk: MacSdk): string =
 proc iOsSimCompileConfig*(self: Config): CompileConfig =
     ## Compiler flags for compiling for the ios simulator
     result = CompileConfig(
-        flags: @[ "--cpu:amd64", "--noMain", "-d:ios", "-d:simulator" ],
+        flags: @[ "--cpu:arm64", "--noMain", "-d:ios", "-d:simulator", "--os:macosx" ],
         linkerFlags: @[
             "-isysroot", self.sdkPath(MacSdk.iPhoneSim),
-            "-fobjc-link-runtime" ],
-        compilerFlags: @[ "-isysroot", self.sdkPath(MacSdk.iPhoneSim) ],
-        binPath: self.appDir / self.appName
+            "-fobjc-link-runtime",
+            "-mios-version-min=" & self.sdkVersion(MacSdk.iPhoneSim)
+        ],
+        compilerFlags: @[
+            "-isysroot", self.sdkPath(MacSdk.iPhoneSim),
+            "-mios-version-min=" & self.sdkVersion(MacSdk.iPhoneSim)
+        ],
+        binPath: self.macAppDir / self.appName
     )
 
