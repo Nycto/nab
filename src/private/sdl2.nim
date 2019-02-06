@@ -61,9 +61,7 @@ proc xcodeSdl2(self: Sdl2Module, conf: Config, xcodeDir: string, sdkVersion: str
             conf.platformBuildDir,
             conf.requireExe("xcodebuild"),
             "-project", fullXcodePath / "SDL.xcodeproj",
-            "-configuration", "Release",
-            "-sdk", conf.sdkNameVersion(conf.macSdk),
-            "SYMROOT=build")
+            "-sdk", conf.sdkNameVersion(conf.macSdk))
 
 proc sdl2gfxSource(self: Sdl2Module, conf: Config): string =
     ## Returns the location of the unzipped SDL2_gfx source, downloading and unzipping if necessary
