@@ -3,7 +3,6 @@ import config, configutil, util, os, sequtils, options, strtabs, mac
 type
     Sdl2Module* = ref object
         sdl2Version*: string
-        sdl2gfxVersion: string
 
 proc sdl2source(self: Sdl2Module, conf: Config): string =
     ## Returns the location of the unzipped SDL2 source, downloading and unzipping if necessary
@@ -36,14 +35,6 @@ proc makeSdl2(self: Sdl2Module, conf: Config): string =
         conf.configure("SDL2", sdl2Source, [ "--prefix", conf.sdl2InstallDir ])
         conf.make("SDL2", sdl2Source, sdl2Source / "build")
 
-proc installSdl2(self: Sdl2Module, conf: Config): string =
-    ## Runs 'make install' for SDL2
-    result = conf.sdl2InstallDir
-    if not result.dirExists:
-        let sdl2Source = self.sdl2source(conf)
-        discard self.makeSdl2(conf)
-        conf.requireSh(sdl2Source, conf.requireExe("make"), "install")
-
 proc xcodeSdl2(self: Sdl2Module, conf: Config, xcodeDir: string, sdkVersion: string): string =
     ## Builds SDL2 using xcode and returns the resulting .a file
 
@@ -63,51 +54,27 @@ proc xcodeSdl2(self: Sdl2Module, conf: Config, xcodeDir: string, sdkVersion: str
             "-project", fullXcodePath / "SDL.xcodeproj",
             "-sdk", conf.sdkNameVersion(conf.macSdk))
 
-proc sdl2gfxSource(self: Sdl2Module, conf: Config): string =
-    ## Returns the location of the unzipped SDL2_gfx source, downloading and unzipping if necessary
-
-    # Unzip the file, downloading it if it doesn't exist
-    let unzippedTo = conf.unzip("SDL2_gfx", conf.platformBuildDir / "sdl2_gfx") do () -> auto:
-        conf.download("SDL2_gfx",
-            "http://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-" & self.sdl2gfxVersion & ".zip",
-            conf.platformBuildDir / "sdl2_gfx.zip"
-        )
-
-    # The zip file itself contains a directory, which is ultimately what we care about
-    return unzippedTo / ("SDL2_gfx-" & self.sdl2gfxVersion)
-
-proc sdl2gfx(self: Sdl2Module, conf: Config): string =
-    ## Builds SDL2 and returns the resulting .a file
-
-    return conf.archiveObjs("SDL2_gfx", conf.platformBuildDir / "sdl2_gfx.a") do () -> auto:
-
-        # Call `configure` and call `make`, record the build directory
-        let src = self.sdl2gfxSource(conf)
-        conf.configure("SDL2_gfx", src, [ "SDL_CONFIG=" & self.installSdl2(conf) / "bin/sdl2-config" ])
-        conf.make("SDL2_gfx", src, src)
-
 proc linkerFlags(self: Sdl2Module, conf: Config): seq[string] =
     ## Returns the compiler flags to use
     case conf.platform
     of Platform.Linux:
-        @[ self.makeSdl2(conf), self.sdl2gfx(conf), "-lsndio", "-lm" ]
+        @[ self.makeSdl2(conf), "-lsndio", "-lm" ]
     of Platform.MacOS:
-        @[
-            self.xcodeSdl2(conf, "Xcode", "macosx" & conf.macOsSdkVersion),
-            self.sdl2gfx(conf) ]
+        @[ self.xcodeSdl2(conf, "Xcode", "macosx" & conf.macOsSdkVersion) ]
     of Platform.iOsSim:
         @[
             self.xcodeSdl2(conf, "Xcode-iOS", "iphonesimulator" & conf.iOsSimSdkVersion),
-            "-framework", "OpenGLES", "-framework", "UIKit", "-framework", "GameController", 
+            "-framework", "OpenGLES", "-framework", "UIKit", "-framework", "GameController",
             "-framework", "CoreMotion", "-framework", "Metal", "-framework", "AVFoundation",
-            "-framework", "AudioToolbox", "-framework", "CoreAudio", "-framework", "CoreGraphics", "-framework", "QuartzCore"
+            "-framework", "AudioToolbox", "-framework", "CoreAudio", "-framework", "CoreGraphics",
+            "-framework", "QuartzCore"
         ]
 
 proc newSdl2Module*(conf: Config): Module =
-    let self = Sdl2Module(sdl2Version: "2.0.9", sdl2gfxVersion: "1.0.4")
+    let self = Sdl2Module(sdl2Version: "2.0.9")
 
     result = Module(
-        flags: proc(): auto = @[ "--threads:on", "--dynlibOverride:SDL2", "--dynlibOverride:SDL2_gfx" ],
+        flags: proc(): auto = @[ "--threads:on", "--dynlibOverride:SDL2" ],
         linkerFlags: proc(): auto = self.linkerFlags(conf),
         compilerFlags: proc(): seq[string] = @[]
     )
