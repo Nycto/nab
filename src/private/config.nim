@@ -10,6 +10,7 @@ type
         compilerFlags*: proc(): seq[string]
 
     Config* = object ## Build configuration
+        dryrun*: bool               ## Whether to actually perform actions
         appName*: string            ## The name of this application. For example, "MyApp"
         bundleId*: string           ## The namespace of this application. For example, "com.example.MyApp"
         version*: string            ## The version of this release. For example, "1.0.0"

@@ -42,7 +42,7 @@ proc installSdl2(self: Sdl2Module, conf: Config): string =
     if not result.dirExists:
         let sdl2Source = self.sdl2source(conf)
         discard self.makeSdl2(conf)
-        conf.requireSh(sdl2Source, requireExe("make"), "install")
+        conf.requireSh(sdl2Source, conf.requireExe("make"), "install")
 
 proc xcodeSdl2(self: Sdl2Module, conf: Config, xcodeDir: string, sdkVersion: string): string =
     ## Builds SDL2 using xcode and returns the resulting .a file
@@ -50,7 +50,7 @@ proc xcodeSdl2(self: Sdl2Module, conf: Config, xcodeDir: string, sdkVersion: str
     if not result.fileExists:
         conf.requireSh(
             conf.platformBuildDir,
-            requireExe("xcodebuild"),
+            conf.requireExe("xcodebuild"),
             "-project", self.sdl2source(conf) / xcodeDir / "SDL/SDL.xcodeproj",
             "-configuration", "Release",
             "-sdk", conf.sdkNameVersion(conf.macSdk),

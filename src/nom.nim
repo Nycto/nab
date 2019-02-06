@@ -15,6 +15,7 @@ template handleException(conf: Config, exec: untyped): untyped =
 proc setConfigKey(conf: var Config, key: string, value: string) =
     ## Sets a key/value on a config object
     case key
+    of "dryrun": conf.dryrun = true
     of "flag", "f": conf.extraFlags.add(value)
     of "verbose": conf.verbose = true
     of "appName", "n": conf.appName = value
@@ -100,5 +101,5 @@ handleException(conf):
     args.add("--out:" & compile.binPath)
 
     # Invoke nimble
-    conf.requireSh(conf.sourceDir, requireExe("nimble"), args)
+    conf.requireSh(conf.sourceDir, conf.requireExe("nimble"), args)
 

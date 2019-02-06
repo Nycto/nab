@@ -1,6 +1,24 @@
 import config, util
 import httpclient, os, strutils, osproc, sequtils, system, strtabs
 
+template require*(self: Config, pass: typed, msg: typed) =
+    ## Requires that a value pass
+    if not pass:
+        if self.dryrun:
+            echo "NOTICE: Action failed, but continuing because of dryrun mode. " & msg
+        else:
+            raise newException(AssertionError, msg)
+
+proc requireDir*(self: Config, path: string): string =
+    ## Requires that a directory exists or throws
+    result = path
+    self.require(path.dirExists, "Directory does not exist: " & path)
+
+proc requireFile*(self: Config, path: string): string =
+    ## Requires that a file exists or throws
+    result = path
+    self.require(path.fileExists, "File does not exist: " & path)
+
 proc platformBuildDir*(self: Config): string =
     ## A directory for platform specific builds
     result = self.buildDir / $self.platform
@@ -26,24 +44,24 @@ proc debug*(self: Config, messages: varargs[string, `$`]) =
     if self.verbose:
         self.log(messages)
 
-proc requireExe*(command: string): string =
+proc requireExe*(self: Config, command: string): string =
     ## Requires that a command exist on the path
     result = findExe(command)
-    if result == "": raise newException(OSError, "Could not find command: " & command)
+    self.require(result != "", "Could not find command: " & command)
 
 proc requireSh*(self: Config, dir: string, env: StringTableRef, command: string, args: varargs[string, `$`]) =
     ## Executes a shell command and throws if it fails
     let fullCommand = command & " " & args.join(" ")
     self.debug("Executing shell command", fullCommand)
-    let process = startProcess(
-        command = command,
-        args = args,
-        workingDir = dir,
-        env = env,
-        options = { poStdErrToStdOut, poParentStreams })
-    if process.waitForExit() != 0:
-        raise newException(OSError, "Command failed: " & fullCommand)
-    self.debug("Command execution complete")
+    if not self.dryrun:
+        let process = startProcess(
+            command = command,
+            args = args,
+            workingDir = dir,
+            env = env,
+            options = { poStdErrToStdOut, poParentStreams })
+        self.require(process.waitForExit() == 0, "Command failed: " & fullCommand)
+        self.debug("Command execution complete")
 
 proc requireSh*(self: Config, dir: string, command: string, args: varargs[string, `$`]) =
     requireSh(self, dir, nil, command, args)
@@ -56,7 +74,8 @@ proc download*(self: Config, title: string, url: string, to: string): string =
         return
     to.ensureParentDir
     self.log "Downloading " & title, "from " & url, "to " & to
-    newHttpClient().downloadFile(url, to)
+    if not self.dryrun:
+        newHttpClient().downloadFile(url, to)
 
 proc unzip*(self: Config, title: string, to: string, zipFile: proc(): string): string =
     ## Unzips a zip file
@@ -67,7 +86,7 @@ proc unzip*(self: Config, title: string, to: string, zipFile: proc(): string): s
         to.ensureDir
         let zip = zipFile()
         self.log "Unzipping " & title, "Destination: " & to
-        self.requireSh(self.buildDir, requireExe("unzip"), zip, "-d", to)
+        self.requireSh(self.buildDir, self.requireExe("unzip"), zip, "-d", to)
 
     self.debug title & " zip file location: " & to
 
@@ -81,9 +100,10 @@ proc configure*(self: Config, title: string, dir: string, args: openarray[string
         self.log("Configuring build for " & title)
         let configurePath = dir / "configure"
 
-        let permissions = configurePath.getFilePermissions()
-        if FilePermission.fpUserExec notin permissions:
-            configurePath.setFilePermissions(permissions + { FilePermission.fpUserExec })
+        if not self.dryrun:
+            let permissions = configurePath.getFilePermissions()
+            if FilePermission.fpUserExec notin permissions:
+                configurePath.setFilePermissions(permissions + { FilePermission.fpUserExec })
 
         self.requireSh(dir, env, configurePath, args)
 
@@ -92,7 +112,7 @@ proc make*(self: Config, title: string, dir: string, buildsInto: string): string
     result = buildsInto
     if isEmpty(items(objs(buildsInto))):
         self.log("Building " & title)
-        self.requireSh(dir, requireExe("make"))
+        self.requireSh(dir, self.requireExe("make"))
 
 proc configureAndMake*(self: Config, title: string, dir: string, buildsInto: string): string =
     ## runs configure, then runs make in a directory
@@ -113,6 +133,6 @@ proc archiveObjs*(self: Config, title: string, archivePath: string, getBuildDir:
 
         self.log("Creating archive for " & title, "Location: " & archivePath)
 
-        self.requireSh(self.buildDir, requireExe("ar"), concat(@["rcs", archivePath], objs))
+        self.requireSh(self.buildDir, self.requireExe("ar"), concat(@["rcs", archivePath], objs))
 
     self.debug title & " archive location: " & archivePath

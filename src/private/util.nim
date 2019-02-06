@@ -9,18 +9,6 @@ proc ensureParentDir*(path: string) =
     ## Guarantees a parent directory exists
     path.parentDir.ensureDir
 
-proc requireDir*(path: string): string =
-    ## Requires that a directory exists or throws
-    result = path
-    if not path.dirExists:
-        raise newException(AssertionError, "Directory does not exist: " & path)
-
-proc requireFile*(path: string): string =
-    ## Requires that a file exists or throws
-    result = path
-    if not path.fileExists:
-        raise newException(AssertionError, "File does not exist: " & path)
-
 template isEmpty*(iter: untyped): bool =
     ## Whether an iterator is empty
     var result: bool = true

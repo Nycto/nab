@@ -19,12 +19,11 @@ proc macSdk*(self: Config): MacSdk =
 
 proc xCodeAppPath*(self: Config): string =
     ## Where to find XCode
-    "/Applications/Xcode.app"
+    self.requireDir("/Applications/Xcode.app")
 
 proc xCodeSdksPath(self: Config, sdk: MacSdk): string =
     ## Returns the directory name for an SDK. This path contains all the versions for that SDK
-    result = self.xCodeAppPath / "Contents/Developer/Platforms/" & sdk.dirName & ".platform/Developer/SDKs"
-    discard result.requireDir
+    self.requireDir(self.xCodeAppPath / "Contents/Developer/Platforms/" & sdk.dirName & ".platform/Developer/SDKs")
 
 proc sdkVersion*(self: Config, sdk: MacSdk): string =
     ## Returns the highest installed SDK version
@@ -36,7 +35,8 @@ proc sdkVersion*(self: Config, sdk: MacSdk): string =
         if matches.len() > 0:
             return matches[matches.len() - 1]
 
-    raise newException(OSError, "Could not find any SDKs. Searched in " & searchDir)
+    self.require(true, "Could not find any SDKs. Searched in " & searchDir)
+    return "12.1"
 
 proc sdkNameVersion*(self: Config, sdk: MacSdk): string =
     ## Returns the name/version form of an sdk
@@ -44,8 +44,7 @@ proc sdkNameVersion*(self: Config, sdk: MacSdk): string =
 
 proc sdkPath*(self: Config, sdk: MacSdk): string =
     ## The file path for a specific SDK
-    result = self.xCodeSdksPath(sdk) / (sdk.dirName & self.sdkVersion(sdk) & ".sdk")
-    discard result.requireDir
+    result = self.requireDir(self.xCodeSdksPath(sdk) / (sdk.dirName & self.sdkVersion(sdk) & ".sdk"))
 
 proc iOsSimCompileConfig*(self: Config): CompileConfig =
     ## Compiler flags for compiling for the ios simulator
@@ -57,3 +56,4 @@ proc iOsSimCompileConfig*(self: Config): CompileConfig =
         compilerFlags: @[ "-isysroot", self.sdkPath(MacSdk.iPhoneSim) ],
         binPath: self.appDir / self.appName
     )
+
