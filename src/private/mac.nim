@@ -65,7 +65,7 @@ proc createPlist*(self: Config) =
 proc bootedDeviceId(self: Config): string =
     ## Queries for running devices and returns its id
     let args = [ "simctl", "list", "devices", "-j" ]
-    let data = self.requireCaptureSh(self.requireExe("xcrun"), self.sourceDir, args) do (stream: auto) -> auto:
+    let data = self.requireCaptureSh(self.sourceDir, self.requireExe("xcrun"), args) do (stream: auto) -> auto:
         try:
             parseJson(stream, "xcrun simctl list devices -j")
         except JsonParsingError:
