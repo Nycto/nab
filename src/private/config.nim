@@ -4,10 +4,11 @@ type
     Platform* = enum
         Linux, MacOS, iOsSim
 
-    Module* = object ## Modules that can inject settings into the build
-        flags*: proc(): seq[string]
-        linkerFlags*: proc(): seq[string]
-        compilerFlags*: proc(): seq[string]
+    Framework* = object ## The primary framework being used
+        flags*: proc(): seq[string]             ## Flags to pass to nimble
+        linkerFlags*: proc(): seq[string]       ## Flags to pass to the linker
+        compilerFlags*: proc(): seq[string]     ## Flags to pass to the compiler
+        main*: proc(): string                   ## The path to the main nim file being compiled
 
     Config* = object ## Build configuration
         dryrun*: bool               ## Whether to actually perform actions
@@ -27,6 +28,5 @@ type
         flags*: seq[string]             ## Flags to pass to the nim compiler
         linkerFlags*: seq[string]       ## Flags to pass to the linker
         compilerFlags*: seq[string]     ## Flags to pass to the compiler
-        binInputPath*: string           ## The primary entry point for the app
         binOutputPath*: string          ## Where to put the executable file
         run*: proc()                    ## Triggers the run

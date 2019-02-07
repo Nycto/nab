@@ -1,10 +1,10 @@
-import config, configutil, util, os, sequtils, options, strtabs, mac
+import config, configutil, util, os, sequtils, options, strtabs, mac, nimble
 
 type
-    Sdl2Module* = ref object
+    Sdl2Framework* = ref object
         sdl2Version*: string
 
-proc sdl2source(self: Sdl2Module, conf: Config): string =
+proc sdl2source(self: Sdl2Framework, conf: Config): string =
     ## Returns the location of the unzipped SDL2 source, downloading and unzipping if necessary
 
     # Unzip the file, downloading it if it doesn't exist
@@ -25,7 +25,7 @@ proc sdl2InstallDir(conf: Config): string =
     ## The installation dir for SDL
     result = conf.platformBuildDir / "sdl2_install"
 
-proc makeSdl2(self: Sdl2Module, conf: Config): string =
+proc makeSdl2(self: Sdl2Framework, conf: Config): string =
     ## Builds SDL2 using make and returns the resulting .a file
 
     return conf.archiveObjs("SDL2", conf.sdl2ArchivePath) do () -> string:
@@ -35,7 +35,7 @@ proc makeSdl2(self: Sdl2Module, conf: Config): string =
         conf.configure("SDL2", sdl2Source, [ "--prefix", conf.sdl2InstallDir ])
         conf.make("SDL2", sdl2Source, sdl2Source / "build")
 
-proc xcodeSdl2(self: Sdl2Module, conf: Config, xcodeDir: string, sdkVersion: string): string =
+proc xcodeSdl2(self: Sdl2Framework, conf: Config, xcodeDir: string, sdkVersion: string): string =
     ## Builds SDL2 using xcode and returns the resulting .a file
 
     let fullXcodePath = self.sdl2source(conf) / xcodeDir / "SDL"
@@ -54,7 +54,7 @@ proc xcodeSdl2(self: Sdl2Module, conf: Config, xcodeDir: string, sdkVersion: str
             "-project", fullXcodePath / "SDL.xcodeproj",
             "-sdk", conf.sdkNameVersion(conf.macSdk))
 
-proc linkerFlags(self: Sdl2Module, conf: Config): seq[string] =
+proc linkerFlags(self: Sdl2Framework, conf: Config): seq[string] =
     ## Returns the compiler flags to use
     case conf.platform
     of Platform.Linux:
@@ -70,12 +70,22 @@ proc linkerFlags(self: Sdl2Module, conf: Config): seq[string] =
             "-framework", "QuartzCore"
         ]
 
-proc newSdl2Module*(conf: Config): Module =
-    let self = Sdl2Module(sdl2Version: "2.0.9")
+const customMain = staticRead("../../resources/sdl2main.nim")
 
-    result = Module(
-        flags: proc(): auto = @[ "--threads:on", "--dynlibOverride:SDL2" ],
+proc mainFile(self: Config): string =
+    ## Returns the path to the main custom main entry point
+    result = self.platformBuildDir / "nim" / "main.nim"
+    if not result.fileExists:
+        result.ensureParentDir
+        result.writeFile("import " & self.nimbleBin.importable & "\n" & customMain)
+
+proc newSdl2Framework*(conf: Config): Framework =
+    let self = Sdl2Framework(sdl2Version: "2.0.9")
+
+    result = Framework(
+        flags: proc(): auto = @[ "--threads:on", "--dynlibOverride:SDL2", "--noMain" ],
         linkerFlags: proc(): auto = self.linkerFlags(conf),
-        compilerFlags: proc(): seq[string] = @[]
+        compilerFlags: proc(): seq[string] = @[],
+        main: proc(): auto = conf.mainFile()
     )
 

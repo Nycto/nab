@@ -43,3 +43,6 @@ iterator parseConfigFile*(path: string): tuple[section: string, key: string, val
             of cfgOption: yield (section, event.key, event.value)
             of cfgError: assert(false, event.msg)
 
+template `?:`*[T](self: T, whenNil: T): T =
+    if self == nil: whenNil else: self
+

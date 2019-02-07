@@ -72,14 +72,12 @@ proc compileConfig(self: Config): CompileConfig =
         CompileConfig(
             flags: @[ "--os:linux", "-d:linux" ],
             binOutputPath: self.appName,
-            binInputPath: self.nimbleBin.absPath,
             run: proc () = self.requireSh(self.sourceDir, self.appName)
         )
     of Platform.MacOS:
         CompileConfig(
             flags: @[ "--os:macosx", "-d:macosx" ],
             binOutputPath: self.appName,
-            binInputPath: self.nimbleBin.absPath,
             run: proc () = self.requireSh(self.sourceDir, self.appName)
         )
     of Platform.iOsSim:
@@ -91,18 +89,18 @@ let conf = readConfig()
 
 handleException(conf):
 
-    # Collect the list of modules
-    let modules = @[
-        newSdl2Module(conf)
-    ]
+    # Instantiate the primary framework
+    let framework = newSdl2Framework(conf)
 
-    let compile = conf.compileConfig()
+    let main = if framework.main == nil: conf.nimbleBin.absPath else: framework.main()
 
-    discard compile.binInputPath.requireNotEmpty("binInputPath", "This is an internal error")
-    discard conf.requireFile(compile.binInputPath)
+    discard main.requireNotEmpty("framework.main()", "This is an internal error")
+    discard conf.requireFile(main)
 
     # The arguments to pass to nimble
-    var args = @[ "c", compile.binInputPath ]
+    var args = @[ "c", main ]
+
+    let compile = conf.compileConfig()
 
     # Define where to put the resulting binary
     compile.binOutputPath.requireNotEmpty("binOutputPath", "This is an internal error").ensureParentDir
@@ -117,10 +115,9 @@ handleException(conf):
     args.add(compile.flags)
     args.add(conf.extraFlags)
 
-    for module in modules:
-        args.add(module.flags())
-        args.add(module.compilerFlags().mapIt("--passC:" & it))
-        args.add(module.linkerFlags().mapIt("--passL:" & it))
+    args.add(framework.flags())
+    args.add(framework.compilerFlags().mapIt("--passC:" & it))
+    args.add(framework.linkerFlags().mapIt("--passL:" & it))
 
     args.add(compile.compilerFlags.mapIt("--passC:" & it))
     args.add(compile.linkerFlags.mapIt("--passL:" & it))

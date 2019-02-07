@@ -1,4 +1,4 @@
-import config, os, util, pegs, configutil, strutils, nimble, plists, streams, json
+import config, os, util, pegs, configutil, strutils, plists, streams, json
 
 type MacSdk* = enum
     ## Mac SDKs that can be targeted for compilation
@@ -48,15 +48,6 @@ proc sdkNameVersion*(self: Config, sdk: MacSdk): string =
 proc sdkPath*(self: Config, sdk: MacSdk): string =
     ## The file path for a specific SDK
     result = self.requireDir(self.xCodeSdksPath(sdk) / (sdk.dirName & self.sdkVersion(sdk) & ".sdk"))
-
-const customMain = staticRead("../../resources/main.nim")
-
-proc mainFile(self: Config): string =
-    ## Returns the path to the main custom main entry point
-    result = self.platformBuildDir / "nim" / "main.nim"
-    if not result.fileExists:
-        result.ensureParentDir
-        result.writeFile("import " & self.nimbleBin.importable & "\n" & customMain)
 
 const defaultInfoPlist = staticRead("../../resources/Info.plist")
 
@@ -115,7 +106,7 @@ proc iOsSimCompileConfig*(self: Config): CompileConfig =
     ## Compiler flags for compiling for the ios simulator
     self.createPlist()
     result = CompileConfig(
-        flags: @[ "--cpu:arm64", "--noMain", "-d:ios", "-d:simulator", "--os:macosx" ],
+        flags: @[ "--cpu:arm64", "-d:ios", "-d:simulator", "--os:macosx" ],
         linkerFlags: @[
             "-isysroot", self.sdkPath(MacSdk.iPhoneSim),
             "-fobjc-link-runtime",
@@ -127,7 +118,6 @@ proc iOsSimCompileConfig*(self: Config): CompileConfig =
             "-liconv"
         ],
         binOutputPath: self.macAppDir / self.appName,
-        binInputPath: self.mainFile,
         run: proc() = self.runIOsSimulator()
     )
 
