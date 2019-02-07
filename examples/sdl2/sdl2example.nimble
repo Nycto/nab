@@ -2,10 +2,10 @@
 
 version       = "0.1.0"
 author        = "Nycto"
-description   = "SDL on ios"
-license       = "Proprietary"
+description   = "Example app using SDL2"
+license       = "MIT"
 srcDir        = "src"
-bin           = @["nimsdlplayground"]
+bin           = @["sdl2example"]
 
 
 # Dependencies
