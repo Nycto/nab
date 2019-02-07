@@ -11,6 +11,8 @@ type
 
     Config* = object ## Build configuration
         dryrun*: bool               ## Whether to actually perform actions
+        run*: bool                  ## Triggers an execution of the app after it is built
+        debugger*: bool             ## Attempt to wait for a debugger when running
         appName*: string            ## The name of this application. For example, "MyApp"
         bundleId*: string           ## The namespace of this application. For example, "com.example.MyApp"
         version*: string            ## The version of this release. For example, "1.0.0"
@@ -27,3 +29,4 @@ type
         compilerFlags*: seq[string]     ## Flags to pass to the compiler
         binInputPath*: string           ## The primary entry point for the app
         binOutputPath*: string          ## Where to put the executable file
+        run*: proc()                    ## Triggers the run

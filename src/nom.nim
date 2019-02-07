@@ -21,6 +21,8 @@ proc setConfigKey(conf: var Config, key: string, value: string) =
     of "appName", "n": conf.appName = value
     of "bundleId", "b": conf.bundleId = value
     of "version", "v": conf.version = value
+    of "run", "r": conf.run = true
+    of "debugger": conf.debugger = true
     else: assert(false, "Unrecognized config key: " & key)
 
 proc parseCli(conf: var Config) =
@@ -70,13 +72,15 @@ proc compileConfig(self: Config): CompileConfig =
         CompileConfig(
             flags: @[ "--os:linux", "-d:linux" ],
             binOutputPath: self.appName,
-            binInputPath: self.nimbleBin.absPath
+            binInputPath: self.nimbleBin.absPath,
+            run: proc () = self.requireSh(self.sourceDir, self.appName)
         )
     of Platform.MacOS:
         CompileConfig(
             flags: @[ "--os:macosx", "-d:macosx" ],
             binOutputPath: self.appName,
-            binInputPath: self.nimbleBin.absPath
+            binInputPath: self.nimbleBin.absPath,
+            run: proc () = self.requireSh(self.sourceDir, self.appName)
         )
     of Platform.iOsSim:
         self.iOsSimCompileConfig()
@@ -123,4 +127,7 @@ handleException(conf):
 
     # Invoke nimble
     conf.requireSh(conf.sourceDir, conf.requireExe("nimble"), args)
+
+    if conf.run:
+        compile.run()
 

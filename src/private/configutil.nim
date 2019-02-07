@@ -1,5 +1,5 @@
 import config, util
-import httpclient, os, strutils, osproc, sequtils, system, strtabs
+import httpclient, os, strutils, osproc, sequtils, system, strtabs, streams
 
 template require*(self: Config, pass: typed, msg: typed) =
     ## Requires that a value pass
@@ -8,6 +8,10 @@ template require*(self: Config, pass: typed, msg: typed) =
             echo "NOTICE: Action failed, but continuing because of dryrun mode. " & msg
         else:
             raise newException(AssertionError, msg)
+
+proc fail*(self: Config, msg: string) =
+    ## Fails unless dryruns are enabled
+    self.require(false, msg)
 
 proc requireDir*(self: Config, path: string): string =
     ## Requires that a directory exists or throws
@@ -64,11 +68,27 @@ proc requireSh*(self: Config, dir: string, env: StringTableRef, command: string,
             workingDir = dir,
             env = env,
             options = { poStdErrToStdOut, poParentStreams })
+        defer: close(process)
         self.require(process.waitForExit() == 0, "Command failed: " & fullCommand)
         self.debug("Command execution complete")
 
 proc requireSh*(self: Config, dir: string, command: string, args: varargs[string, `$`]) =
     requireSh(self, dir, nil, command, args)
+
+proc requireCaptureSh*[T](
+    self: Config,
+    dir: string,
+    command: string,
+    args: varargs[string, `$`],
+    process: proc (output: Stream): T
+): T =
+    ## Executes a command and processes the output through a callback
+    var handle = startProcess(self.requireExe("nimble"), self.sourceDir, [ "dump" ])
+    defer: close(handle)
+    let stream = handle.outputStream
+    defer: close(stream)
+    result = process(stream)
+    self.require(handle.waitForExit == 0, "Command failed: " & command & " " & args.join(" "))
 
 proc download*(self: Config, title: string, url: string, to: string): string =
     ## Downloads a file
