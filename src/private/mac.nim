@@ -85,7 +85,7 @@ proc runIOsSimulator(self: Config) =
 
     # Start the simulator
     let iOsSimApp = self.requireDir(self.xCodeAppPath / "Contents/Developer/Applications/Simulator.app")
-    self.requireSh(self.requireExe("open"), self.sourceDir, [ iOsSimApp ])
+    self.requireSh(self.sourceDir, self.requireExe("open"), [ iOsSimApp ])
 
     let xcrun = self.requireExe("xcrun")
     let deviceId = self.bootedDeviceId()
