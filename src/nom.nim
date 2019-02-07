@@ -109,7 +109,7 @@ handleException(conf):
     args.add("--out:" & compile.binOutputPath)
 
     # Make sure the source dir is includable
-    args.add("--path:" & conf	.sourceDir)
+    args.add("--path:" & conf.sourceDir)
 
     # Keep the nimcache separate for each platform
     args.add("--nimcache:" & conf.nimcacheDir)
