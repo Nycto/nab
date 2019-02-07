@@ -87,8 +87,13 @@ proc requireCaptureSh*[T](
     defer: close(handle)
     let stream = handle.outputStream
     defer: close(stream)
-    result = process(stream)
-    self.require(handle.waitForExit == 0, "Command failed: " & command & " " & args.join(" "))
+    let fullCommand = command & " " & args.join(" ")
+    try:
+        result = process(stream)
+    except:
+        self.log("stdout processing failed while executing command: " & fullCommand)
+        raise
+    self.require(handle.waitForExit == 0, "Command failed: " & fullCommand)
 
 proc download*(self: Config, title: string, url: string, to: string): string =
     ## Downloads a file
