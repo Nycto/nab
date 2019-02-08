@@ -63,7 +63,13 @@ proc linkerFlags(self: Sdl2Framework, conf: Config): seq[string] =
     of Platform.Linux:
         @[ self.makeSdl2(conf), "-lsndio", "-lm" ]
     of Platform.MacOS:
-        @[ self.xcodeSdl2(conf, "Xcode", conf.sdkNameVersion(MacSdk.MacOSX)) ]
+        @[
+            self.xcodeSdl2(conf, "Xcode", conf.sdkNameVersion(MacSdk.MacOSX)),
+            "-framework", "OpenGL", "-framework", "AppKit", "-framework", "AudioUnit", "-framework", "ForceFeedback",
+            "-framework", "IOKit", "-framework", "Carbon", "-framework", "CoreServices",
+            "-framework", "ApplicationServices", "-framework", "AudioToolbox", "-framework", "CoreAudio",
+            "-framework", "CoreGraphics", "-framework", "QuartzCore", "-framework", "Metal"
+        ]
     of Platform.iOsSim:
         @[
             self.xcodeSdl2(conf, "Xcode-iOS", conf.sdkNameVersion(MacSdk.iPhoneSim)),
