@@ -73,9 +73,11 @@ proc bootedDeviceId(self: Config): string =
             newJObject()
 
     let devices = if data.hasKey("devices"): data["devices"] else: newJObject()
-    for _, entry in pairs(devices):
-        if entry.getStr("state") == "Booted" and entry.getStr("udid").len > 0:
-            return entry.getStr("udid")
+    for _, entries in pairs(devices):
+        for entry in items(entries):
+            if entry["state"].getStr("booted") == "Booted":
+                let udid = entry["udid"].getStr("")
+                if udid != "": return udid
 
     self.require(false, "No running devices found when running `xcrun simctl list devices`")
     return "NO-RUNNING-DEVICE"
