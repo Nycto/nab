@@ -40,19 +40,22 @@ proc xcodeSdl2(self: Sdl2Framework, conf: Config, xcodeDir: string, sdkVersion: 
 
     let fullXcodePath = self.sdl2source(conf) / xcodeDir / "SDL"
 
-    let releaseSubdir =
+    let releaseSubdir = block:
         case conf.platform
         of Platform.iOsSim: "Release-iphonesimulator"
-        else: raise newException(AssertionError, "Platform does not support xcode builds of sdl2: " & $conf.platform)
+        of Platform.MacOS: "Release"
+        of Platform.Linux: raise newException(AssertionError, "Can't build SDL2 with xcodebuild on " & $conf.platform)
 
     result = fullXcodePath / "build" / releaseSubdir / "libSDL2.a"
 
     if not result.fileExists:
-        conf.requireSh(
-            conf.platformBuildDir,
-            conf.requireExe("xcodebuild"),
-            "-project", fullXcodePath / "SDL.xcodeproj",
-            "-sdk", conf.sdkNameVersion(conf.macSdk))
+        var xCodeBuildArgs = @[ "-project", fullXcodePath / "SDL.xcodeproj", "-sdk", conf.sdkNameVersion(conf.macSdk) ]
+
+        case conf.platform
+        of Platform.iOsSim, Platform.Linux: discard
+        of Platform.MacOS: xCodeBuildArgs.add([ "-configuration", "Release", "-target", "Static Library" ])
+
+        conf.requireSh(conf.platformBuildDir, conf.requireExe("xcodebuild"), xCodeBuildArgs)
 
 proc linkerFlags(self: Sdl2Framework, conf: Config): seq[string] =
     ## Returns the compiler flags to use
