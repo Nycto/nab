@@ -3,7 +3,7 @@ import config as c, configutil, util
 
 proc nimbleDump(self: c.Config): pc.Config =
     ## Reads the nimble config
-    return self.requireCaptureSh(self.requireExe("nimble"), self.sourceDir, [ "dump" ]).apply(it):
+    return self.requireCaptureSh(self.sourceDir, self.requireExe("nimble"), [ "dump" ]).apply(it):
         loadConfig(newStringStream(it), "nimble dump")
 
 proc nimbleBin*(self: c.Config): tuple[absPath, importable: string] =
