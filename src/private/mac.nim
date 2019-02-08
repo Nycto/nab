@@ -65,9 +65,9 @@ proc createPlist*(self: Config) =
 proc bootedDeviceId(self: Config): string =
     ## Queries for running devices and returns its id
     let args = [ "simctl", "list", "devices", "-j" ]
-    let data = self.requireCaptureSh(self.sourceDir, self.requireExe("xcrun"), args) do (stream: auto) -> auto:
+    let data = self.requireCaptureSh(self.sourceDir, self.requireExe("xcrun"), args).apply(it):
         try:
-            parseJson(stream, "xcrun simctl list devices -j")
+            parseJson(newStringStream(it), "xcrun simctl list devices -j")
         except JsonParsingError:
             self.fail("Json parsing error while trying to collect simulator device list: " & getCurrentExceptionMsg())
             newJObject()

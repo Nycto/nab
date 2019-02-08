@@ -46,3 +46,9 @@ iterator parseConfigFile*(path: string): tuple[section: string, key: string, val
 template `?:`*[T](self: T, whenNil: T): T =
     if self == nil: whenNil else: self
 
+template apply*(value: typed, name, op: untyped): untyped =
+    ## Calls a block with a value assigned to an argument
+    block:
+        let name {.inject.} = value
+        op
+

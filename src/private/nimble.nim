@@ -1,10 +1,10 @@
 import parsecfg as pc, streams, osproc, os
-import config as c, configutil
+import config as c, configutil, util
 
 proc nimbleDump(self: c.Config): pc.Config =
     ## Reads the nimble config
-    self.requireCaptureSh(self.requireExe("nimble"), self.sourceDir, [ "dump" ]) do (stream: auto) -> auto:
-        loadConfig(stream, "nimble dump")
+    return self.requireCaptureSh(self.requireExe("nimble"), self.sourceDir, [ "dump" ]).apply(it):
+        loadConfig(newStringStream(it), "nimble dump")
 
 proc nimbleBin*(self: c.Config): tuple[absPath, importable: string] =
     ## Returns the primary bin file expecting to be compiled for this project

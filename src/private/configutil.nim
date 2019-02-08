@@ -56,6 +56,8 @@ proc requireExe*(self: Config, command: string): string =
     ## Requires that a command exist on the path
     result = findExe(command)
     self.require(result != "", "Could not find command: " & command)
+    if result == "":
+        result = command
 
 proc requireSh*(self: Config, dir: string, env: StringTableRef, command: string, args: varargs[string, `$`]) =
     ## Executes a shell command and throws if it fails
@@ -75,25 +77,22 @@ proc requireSh*(self: Config, dir: string, env: StringTableRef, command: string,
 proc requireSh*(self: Config, dir: string, command: string, args: varargs[string, `$`]) =
     requireSh(self, dir, nil, command, args)
 
-proc requireCaptureSh*[T](
-    self: Config,
-    dir: string,
-    command: string,
-    args: varargs[string, `$`],
-    process: proc (output: Stream): T
-): T =
+proc requireCaptureSh*(self: Config, dir: string, command: string, args: varargs[string, `$`]): string =
     ## Executes a command and processes the output through a callback
-    var handle = startProcess(self.requireExe("nimble"), self.sourceDir, [ "dump" ])
-    defer: close(handle)
-    let stream = handle.outputStream
-    defer: close(stream)
     let fullCommand = command & " " & args.join(" ")
-    try:
-        result = process(stream)
-    except:
-        self.log("stdout processing failed while executing command: " & fullCommand)
-        raise
-    self.require(handle.waitForExit == 0, "Command failed: " & fullCommand)
+    self.debug("Executing and capturing shell command", fullCommand)
+
+    if not self.dryrun:
+        var handle = startProcess(command, self.sourceDir, args, nil, {})
+        defer: close(handle)
+        let stream = handle.outputStream
+        defer: close(stream)
+
+        while not stream.atEnd:
+            self.require(handle.peekExitCode <= 0, "Command failed: " & fullCommand)
+            result.add(stream.readAll)
+
+        self.require(handle.waitForExit == 0, "Command failed: " & fullCommand)
 
 proc download*(self: Config, title: string, url: string, to: string): string =
     ## Downloads a file
