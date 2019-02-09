@@ -62,26 +62,6 @@ proc createPlist*(self: Config) =
 
     plist.writePlist(self.macAppDir / "Info.plist")
 
-proc bootedDeviceId(self: Config): string =
-    ## Queries for running devices and returns its id
-    let args = [ "simctl", "list", "devices", "-j" ]
-    let data = self.requireCaptureSh(self.sourceDir, self.requireExe("xcrun"), args).apply(it):
-        try:
-            parseJson(newStringStream(it), "xcrun simctl list devices -j")
-        except JsonParsingError:
-            self.fail("Json parsing error while trying to collect simulator device list: " & getCurrentExceptionMsg())
-            newJObject()
-
-    let devices = if data.hasKey("devices"): data["devices"] else: newJObject()
-    for _, entries in pairs(devices):
-        for entry in items(entries):
-            if entry["state"].getStr("booted") == "Booted":
-                let udid = entry["udid"].getStr("")
-                if udid != "": return udid
-
-    self.require(false, "No running devices found when running `xcrun simctl list devices`")
-    return "NO-RUNNING-DEVICE"
-
 proc runIOsSimulator(self: Config) =
     ## Executes the iOs simulator
 
@@ -90,18 +70,17 @@ proc runIOsSimulator(self: Config) =
     self.requireSh(self.sourceDir, self.requireExe("open"), [ iOsSimApp ])
 
     let xcrun = self.requireExe("xcrun")
-    let deviceId = self.bootedDeviceId()
 
     # Uninstall previous versions of the app
-    self.requireSh(self.sourceDir, xcrun, [ "simctl", "uninstall", deviceId, self.appName ])
+    self.requireSh(self.sourceDir, xcrun, [ "simctl", "uninstall", "booted", self.bundleId ])
 
     # Install the app
-    self.requireSh(self.sourceDir, xcrun, [ "simctl", "install", deviceId, self.macAppDir ])
+    self.requireSh(self.sourceDir, xcrun, [ "simctl", "install", "booted", self.macAppDir ])
 
     # Now launch
     var launchArgs = @[ "simctl", "launch" ]
     if self.debugger: launchArgs.add("--wait-for-debugger")
-    launchArgs.add([ deviceId, self.appName ])
+    launchArgs.add([ "booted", self.bundleId ])
     self.requireSh(self.sourceDir, xcrun, launchArgs)
 
 proc iOsSimCompileConfig*(self: Config): CompileConfig =
