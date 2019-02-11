@@ -84,9 +84,8 @@ const customMain = staticRead("../../resources/sdl2main.nim")
 proc mainFile(self: Config): string =
     ## Returns the path to the main custom main entry point
     result = self.platformBuildDir / "nim" / "main.nim"
-    if not result.fileExists:
-        result.ensureParentDir
-        result.writeFile("import " & self.nimbleBin.importable & "\n" & customMain)
+    result.ensureParentDir
+    result.writeFile("import " & self.nimbleBin.importable & "\n" & customMain)
 
 proc newSdl2Framework*(conf: Config): Framework =
     let self = Sdl2Framework(sdl2Version: "2.0.9")
@@ -94,7 +93,7 @@ proc newSdl2Framework*(conf: Config): Framework =
     result = Framework(
         flags: proc(): auto = @[ "--threads:on", "--dynlibOverride:SDL2", "--noMain" ],
         linkerFlags: proc(): auto = self.linkerFlags(conf),
-        compilerFlags: proc(): seq[string] = @[],
+        compilerFlags: proc(): seq[string] = @[ "-I" & self.sdl2source(conf) / "include" ],
         main: proc(): auto = conf.mainFile()
     )
 

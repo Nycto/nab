@@ -1,7 +1,7 @@
 # This is the main file to use when compiling with SDL2
 
 {.emit: """
-//#include <SDL2/SDL_main.h>
+#include <SDL_main.h>
 
 extern int cmdCount;
 extern char** cmdLine;
