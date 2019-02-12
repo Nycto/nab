@@ -55,7 +55,7 @@ proc readConfig(): Config =
     handleException(result):
 
         # Start by parsing the config file
-        for _, key, value in parseConfigFile(getCurrentDir() / "nom.cfg"):
+        for _, key, value in parseConfigFile(getCurrentDir() / "nab.cfg"):
             result.setconfigKey(key, value)
 
         result.parseCli()

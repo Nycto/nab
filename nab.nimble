@@ -2,10 +2,10 @@
 
 version       = "0.1.0"
 author        = "Nycto"
-description   = "Nim on mobile build tool"
+description   = "Nim application bundler"
 license       = "MIT"
 srcDir        = "src"
-bin           = @["nom"]
+bin           = @["nab"]
 
 
 # Dependencies
