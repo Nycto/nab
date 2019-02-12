@@ -165,3 +165,9 @@ proc archiveObjs*(self: Config, title: string, archivePath: string, getBuildDir:
 
     self.debug title & " archive location: " & archivePath
 
+template requireKey*(self: Config, key: untyped) =
+    ## Requires an entry in the config
+    let value = self.`key`
+    let name = astToStr(key)
+    discard requireNotEmpty(value, name, "Add '" & name & "' to nab.cfg, or pass it via --" & name)
+

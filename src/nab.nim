@@ -28,15 +28,9 @@ proc readConfig(): Config =
     )
 
     handleException(result):
-
         result.parseNimble()
         result.parseConfigFile()
         result.parseCli()
-
-        discard result.appName.requireNotEmpty("appName", "Add 'appName' to your config, or pass it via --appName")
-        discard result.bundleId.requireNotEmpty("bundleId", "Add 'bundleId' to your config, or pass it via --bundleId")
-        discard result.version.requireNotEmpty("version", "Add 'version' to your config, or pass it via --version")
-        discard result.buildDir.requireNotEmpty("buildDir", "Add 'buildDir' to your config, or pass it via --buildDir")
 
 proc compileConfig(self: Config): CompileConfig =
     ## Returns the compiler flags to pass for a platform build

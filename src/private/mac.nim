@@ -85,6 +85,11 @@ proc runIOsSimulator(self: Config) =
 
 proc iOsSimCompileConfig*(self: Config): CompileConfig =
     ## Compiler flags for compiling for the ios simulator
+    self.requireKey(appName)
+    self.requireKey(bundleId)
+    self.requireKey(version)
+    self.requireKey(buildDir)
+
     self.createPlist()
     result = CompileConfig(
         flags: @[ "--cpu:arm64", "-d:ios", "-d:simulator", "--os:macosx" ],
