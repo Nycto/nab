@@ -11,7 +11,9 @@ proc nimbleBin*(self: c.Config): tuple[absPath, importable: string] =
     let nimbleConfig = self.nimbleDump()
     let binName = nimbleConfig.getSectionValue("", "bin")
     self.require(binName.len > 0, "Binary name defined in nimble config must not be empty")
-    let importable = "src" / binName
+    let srcDir = nimbleConfig.getSectionValue("", "srcDir")
+    self.require(srcDir.len > 0, "Source directory defined in nimble config must not be empty")
+    let importable = srcDir / binName
     let absPath = self.sourceDir / importable & ".nim"
     self.require(absPath.fileExists, "Binary file defined in nimble config does not exist: " & absPath)
     return (absPath, importable)
