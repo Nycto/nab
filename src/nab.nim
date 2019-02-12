@@ -1,5 +1,5 @@
-import private/config, private/configutil, private/sdl2, private/mac, private/util, private/nimble
-import os, sequtils, parseopt, strutils, times
+import private/config, private/configutil, private/sdl2, private/mac, private/util, private/nimble, private/readconfig
+import os, sequtils, times
 
 template handleException(conf: Config, exec: untyped): untyped =
     ## Catches and prints exceptions
@@ -11,31 +11,6 @@ template handleException(conf: Config, exec: untyped): untyped =
             raise
         else:
             quit(QuitFailure)
-
-proc setConfigKey(conf: var Config, key: string, value: string) =
-    ## Sets a key/value on a config object
-    case key
-    of "dryrun": conf.dryrun = true
-    of "flag", "f": conf.extraFlags.add(value)
-    of "verbose": conf.verbose = true
-    of "appName", "n": conf.appName = value
-    of "bundleId", "b": conf.bundleId = value
-    of "version", "v": conf.version = value
-    of "run", "r": conf.run = true
-    of "debugger": conf.debugger = true
-    else: assert(false, "Unrecognized config key: " & key)
-
-proc parseCli(conf: var Config) =
-    ## Parses the CLI options into a config
-    var parser = initOptParser()
-    for kind, key, val in parser.getopt():
-        case kind
-        of cmdArgument:
-            conf.platform = parseEnum[Platform](key)
-        of cmdLongOption, cmdShortOption:
-            conf.setConfigKey(key, val)
-        of cmdEnd:
-            assert(false) # cannot happen
 
 proc readConfig(): Config =
 
@@ -54,10 +29,8 @@ proc readConfig(): Config =
 
     handleException(result):
 
-        # Start by parsing the config file
-        for _, key, value in parseConfigFile(getCurrentDir() / "nab.cfg"):
-            result.setconfigKey(key, value)
-
+        result.parseNimble()
+        result.parseConfigFile()
         result.parseCli()
 
         discard result.appName.requireNotEmpty("appName", "Add 'appName' to your config, or pass it via --appName")

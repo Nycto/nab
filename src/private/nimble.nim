@@ -1,7 +1,7 @@
 import parsecfg as pc, streams, osproc, os
 import config as c, configutil, util
 
-proc nimbleDump(self: c.Config): pc.Config =
+proc nimbleDump*(self: c.Config): pc.Config =
     ## Reads the nimble config
     return self.requireCaptureSh(self.sourceDir, self.requireExe("nimble"), [ "dump" ]).apply(it):
         loadConfig(newStringStream(it), "nimble dump")
