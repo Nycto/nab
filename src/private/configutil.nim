@@ -168,5 +168,5 @@ proc archiveObjs*(self: Config, title: string, archivePath: string, getBuildDir:
 proc requireKeys*(self: Config, keys: varargs[StrConf]) =
     ## Requires an entry in the config
     for key in keys:
-        discard self[key].requireNotEmpty($key, "Add '" & $key & "' to nab.cfg, or pass it via --" & $key)
+        discard self.strs[key].requireNotEmpty($key, "Add '" & $key & "' to nab.cfg, or pass it via --" & $key)
 
