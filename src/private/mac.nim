@@ -93,6 +93,9 @@ proc iOsSimCompileConfig*(self: Config): CompileConfig =
     ## Compiler flags for compiling for the ios simulator
     self.requireKeys(appName, bundleId, version, buildDir)
 
+    # Installs fail if the directory is re-used. Deleting it first helps
+    self.macAppDir.removeDir
+
     self.createPlist()
     result = CompileConfig(
         flags: @[ "--cpu:arm64", "-d:ios", "-d:simulator", "--os:macosx" ],
