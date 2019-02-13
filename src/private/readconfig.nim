@@ -31,9 +31,13 @@ proc parseCli*(conf: var c.Config) =
         of cmdEnd:
             assert(false) # cannot happen
 
+proc configFilePath(): string =
+    ## The path of the config file
+    getCurrentDir() / "nab.cfg"
+
 proc parseConfigFile*(conf: var c.Config) =
     ## Parses the config file in the cwd for settings
-    for _, key, value in parseConfigFile(getCurrentDir() / "nab.cfg"):
+    for _, key, value in parseConfigFile(configFilePath()):
         conf.setconfigKey(key, value)
 
 proc parseNimble*(conf: var c.Config) =
