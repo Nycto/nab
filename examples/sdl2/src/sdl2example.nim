@@ -40,7 +40,7 @@ proc main() =
     randomize()
 
     # create window and renderer */
-    let window = createWindow(nil, 0, 0, 320, 480, SDL_WINDOW_ALLOW_HIGHDPI)
+    let window = createWindow(nil, 0, 0, 320, 480, SDL_WINDOW_ALLOW_HIGHDPI or SDL_WINDOW_FULLSCREEN)
     let renderer = createRenderer(window, -1, 0)
 
     defer: sdl2.quit()
