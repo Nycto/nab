@@ -52,3 +52,11 @@ template apply*(value: typed, name, op: untyped): untyped =
         let name {.inject.} = value
         op
 
+template tryParseEnum*(enumType: type, value: string, name, invoke: untyped) =
+    ## Invokes a callback with an enum, if it parses
+    try:
+        let `name` {.inject.} = parseEnum[enumType](value)
+        invoke
+    except ValueError:
+        discard
+

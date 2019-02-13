@@ -2,15 +2,21 @@ import util, config as c, parseopt, strutils, os, parsecfg as pc, nimble
 
 proc setConfigKey*(conf: var c.Config, key: string, value: string) =
     ## Sets a key/value on a config object
+    tryParseEnum(StrConf, key, strKey):
+        conf[strKey] = value
+        return
+
+    tryParseEnum(BoolConf, key, boolKey):
+        conf[boolKey] = true
+        return
+
+    tryParseEnum(StrSeqConf, key, strSeqKey):
+        conf.add(strSeqKey, value)
+        return
+
     case key
-    of "dryrun": conf[dryrun] = true
-    of "flag", "f": conf.add(extraFlags, value)
-    of "verbose": conf[verbose] = true
-    of "appName", "n": conf[appName] = value
-    of "bundleId", "b": conf[bundleId] = value
-    of "version", "v": conf[version] = value
-    of "run", "r": conf[run] = true
-    of "debugger": conf[debugger] = true
+    of "f": conf.add(extraFlags, value)
+    of "r": conf[run] = true
     else: assert(false, "Unrecognized config key: " & key)
 
 proc parseCli*(conf: var c.Config) =
