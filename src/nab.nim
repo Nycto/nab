@@ -7,7 +7,7 @@ template handleException(conf: Config, exec: untyped): untyped =
         exec
     except:
         echo getCurrentExceptionMsg()
-        if conf.verbose:
+        if conf[verbose]:
             raise
         else:
             quit(QuitFailure)
@@ -18,14 +18,11 @@ proc readConfig(): Config =
         when defined(macosx): Platform.MacOS
         else: Platform.Linux
 
-    result = Config(
-        buildTime: $getTime().toUnix,
-        sourceDir: getCurrentDir(),
-        buildDir: getCurrentDir() / "build",
-        platform: defaultPlatform,
-        extraFlags: @[],
-        verbose: false
-    )
+    result = Config(platform: defaultPlatform)
+    result[buildTime] = $getTime().toUnix
+    result[sourceDir] = getCurrentDir()
+    result[buildDir] = getCurrentDir() / "build"
+    result[verbose] = false
 
     handleException(result):
         result.parseNimble()
@@ -38,14 +35,14 @@ proc compileConfig(self: Config): CompileConfig =
     of Platform.Linux:
         CompileConfig(
             flags: @[ "--os:linux", "-d:linux" ],
-            binOutputPath: self.appName,
-            run: proc () = self.requireSh(self.sourceDir, self.appName)
+            binOutputPath: self[appName],
+            run: proc () = self.requireSh(self[sourceDir], self[appName])
         )
     of Platform.MacOS:
         CompileConfig(
             flags: @[ "--os:macosx", "-d:macosx" ],
-            binOutputPath: self.appName,
-            run: proc () = self.requireSh(self.sourceDir, self.appName)
+            binOutputPath: self[appName],
+            run: proc () = self.requireSh(self[sourceDir], self[appName])
         )
     of Platform.iOsSim:
         self.iOsSimCompileConfig()
@@ -74,13 +71,13 @@ handleException(conf):
     args.add("--out:" & compile.binOutputPath)
 
     # Make sure the source dir is includable
-    args.add("--path:" & conf.sourceDir)
+    args.add("--path:" & conf[sourceDir])
 
     # Keep the nimcache separate for each platform
     args.add("--nimcache:" & conf.nimcacheDir)
 
     args.add(compile.flags)
-    args.add(conf.extraFlags)
+    args.add(conf[extraFlags])
 
     args.add(framework.flags())
     args.add(framework.compilerFlags().mapIt("--passC:" & it))
@@ -90,8 +87,8 @@ handleException(conf):
     args.add(compile.linkerFlags.mapIt("--passL:" & it))
 
     # Invoke nimble
-    conf.requireSh(conf.sourceDir, conf.requireExe("nimble"), args)
+    conf.requireSh(conf[sourceDir], conf.requireExe("nimble"), args)
 
-    if conf.run:
+    if conf[run]:
         compile.run()
 

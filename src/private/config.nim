@@ -10,19 +10,28 @@ type
         compilerFlags*: proc(): seq[string]     ## Flags to pass to the compiler
         main*: proc(): string                   ## The path to the main nim file being compiled
 
+    StrConf* {. pure .} = enum
+        appName,    ## The name of this application. For example, "MyApp"
+        bundleId,   ## The namespace of this application. For example, "com.example.MyApp"
+        version,    ## The version of this release. For example, "1.0.0"
+        buildTime,  ## The time at which this build was performed
+        sourceDir,  ## Where to find the source code being compiled
+        buildDir    ## Where to put all build artifacts
+
+    BoolConf* {. pure .} = enum
+        dryrun,     ## Whether to actually perform actions
+        run,        ## Triggers an execution of the app after it is built
+        debugger,   ## Attempt to wait for a debugger when running
+        verbose     ## Whether to display detailed build information
+
+    StrSeqConf* {. pure .} = enum
+        extraFlags  ## Additional flags to pass to the nim compiler
+
     Config* = object ## Build configuration
-        dryrun*: bool               ## Whether to actually perform actions
-        run*: bool                  ## Triggers an execution of the app after it is built
-        debugger*: bool             ## Attempt to wait for a debugger when running
-        appName*: string            ## The name of this application. For example, "MyApp"
-        bundleId*: string           ## The namespace of this application. For example, "com.example.MyApp"
-        version*: string            ## The version of this release. For example, "1.0.0"
-        buildTime*: string          ## The time at which this build was performed
-        sourceDir*: string          ## Where to find the source code being compiled
-        buildDir*: string           ## Where to put all build artifacts
         platform*: Platform         ## The platform being targetted
-        extraFlags*: seq[string]    ## Additional flags to pass to the nim compiler
-        verbose*: bool              ## Whether to display detailed build information
+        strs*: array[StrConf, string]
+        bools*: array[BoolConf, bool]
+        strSeqs*: array[StrSeqConf, seq[string]]
 
     CompileConfig* = object ## Platform configuration for the compiler
         flags*: seq[string]             ## Flags to pass to the nim compiler
@@ -30,3 +39,28 @@ type
         compilerFlags*: seq[string]     ## Flags to pass to the compiler
         binOutputPath*: string          ## Where to put the executable file
         run*: proc()                    ## Triggers the run
+
+proc `[]`*(self: Config, key: StrConf): string =
+    ## Returns as a string key
+    self.strs[key]
+
+proc `[]`*(self: Config, key: BoolConf): bool =
+    ## Returns as a boolean key
+    self.bools[key]
+
+proc `[]`*(self: Config, key: StrSeqConf): seq[string] =
+    ## Returns as a str seq key
+    self.strSeqs[key]
+
+proc `[]=`*(self: var Config, key: StrConf, value: string) =
+    ## Sets a string key
+    self.strs[key] = value
+
+proc `[]=`*(self: var Config, key: BoolConf, value: bool) =
+    ## Sets a boolean key
+    self.bools[key] = value
+
+proc add*(self: var Config, key: StrSeqConf, value: string) =
+    ## Adds a string seq key
+    self.strSeqs[key].add(value)
+

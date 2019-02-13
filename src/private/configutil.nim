@@ -4,7 +4,7 @@ import httpclient, os, strutils, osproc, sequtils, system, strtabs, streams
 template require*(self: Config, pass: typed, msg: typed) =
     ## Requires that a value pass
     if not pass:
-        if self.dryrun:
+        if self[dryrun]:
             echo "NOTICE: Action failed, but continuing because of dryrun mode. " & msg
         else:
             raise newException(AssertionError, msg)
@@ -25,7 +25,7 @@ proc requireFile*(self: Config, path: string): string =
 
 proc platformBuildDir*(self: Config): string =
     ## A directory for platform specific builds
-    result = self.buildDir / $self.platform
+    result = self[buildDir] / $self.platform
     result.ensureDir
 
 proc nimcacheDir*(self: Config): string =
@@ -34,7 +34,7 @@ proc nimcacheDir*(self: Config): string =
 
 proc macAppDir*(self: Config): string =
     ## The directory in which to put content to be bundled
-    result = self.platformBuildDir / self.appName & ".app"
+    result = self.platformBuildDir / self[appName] & ".app"
     result.ensureDir
 
 proc log*(self: Config, messages: varargs[string, `$`]) =
@@ -49,7 +49,7 @@ proc log*(self: Config, messages: varargs[string, `$`]) =
 
 proc debug*(self: Config, messages: varargs[string, `$`]) =
     ## Logs an event to the console
-    if self.verbose:
+    if self[verbose]:
         self.log(messages)
 
 proc requireExe*(self: Config, command: string): string =
@@ -63,7 +63,7 @@ proc requireSh*(self: Config, dir: string, env: StringTableRef, command: string,
     ## Executes a shell command and throws if it fails
     let fullCommand = command & " " & args.join(" ")
     self.debug("Executing shell command", fullCommand)
-    if not self.dryrun:
+    if not self[dryrun]:
         let process = startProcess(
             command = command,
             args = args,
@@ -82,8 +82,8 @@ proc requireCaptureSh*(self: Config, dir: string, command: string, args: varargs
     let fullCommand = command & " " & args.join(" ")
     self.debug("Executing and capturing shell command", fullCommand)
 
-    if not self.dryrun:
-        var handle = startProcess(command, self.sourceDir, args, nil, {})
+    if not self[dryrun]:
+        var handle = startProcess(command, self[sourceDir], args, nil, {})
         defer: close(handle)
         let stream = handle.outputStream
         defer: close(stream)
@@ -102,7 +102,7 @@ proc download*(self: Config, title: string, url: string, to: string): string =
         return
     to.ensureParentDir
     self.log "Downloading " & title, "from " & url, "to " & to
-    if not self.dryrun:
+    if not self[dryrun]:
         newHttpClient().downloadFile(url, to)
 
 proc unzip*(self: Config, title: string, to: string, zipFile: proc(): string): string =
@@ -114,7 +114,7 @@ proc unzip*(self: Config, title: string, to: string, zipFile: proc(): string): s
         to.ensureDir
         let zip = zipFile()
         self.log "Unzipping " & title, "Destination: " & to
-        self.requireSh(self.buildDir, self.requireExe("unzip"), zip, "-d", to)
+        self.requireSh(self[buildDir], self.requireExe("unzip"), zip, "-d", to)
 
     self.debug title & " zip file location: " & to
 
@@ -128,7 +128,7 @@ proc configure*(self: Config, title: string, dir: string, args: openarray[string
         self.log("Configuring build for " & title)
         let configurePath = dir / "configure"
 
-        if not self.dryrun:
+        if not self[dryrun]:
             let permissions = configurePath.getFilePermissions()
             if FilePermission.fpUserExec notin permissions:
                 configurePath.setFilePermissions(permissions + { FilePermission.fpUserExec })
@@ -161,13 +161,12 @@ proc archiveObjs*(self: Config, title: string, archivePath: string, getBuildDir:
 
         self.log("Creating archive for " & title, "Location: " & archivePath)
 
-        self.requireSh(self.buildDir, self.requireExe("ar"), concat(@["rcs", archivePath], objs))
+        self.requireSh(self[buildDir], self.requireExe("ar"), concat(@["rcs", archivePath], objs))
 
     self.debug title & " archive location: " & archivePath
 
-template requireKey*(self: Config, key: untyped) =
+proc requireKeys*(self: Config, keys: varargs[StrConf]) =
     ## Requires an entry in the config
-    let value = self.`key`
-    let name = astToStr(key)
-    discard requireNotEmpty(value, name, "Add '" & name & "' to nab.cfg, or pass it via --" & name)
+    for key in keys:
+        discard self[key].requireNotEmpty($key, "Add '" & $key & "' to nab.cfg, or pass it via --" & $key)
 

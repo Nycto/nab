@@ -54,11 +54,11 @@ const defaultInfoPlist = staticRead("../../resources/Info.plist")
 proc createPlist*(self: Config) =
     ## Returns the JsonNode representint the Info.plist file
     let plist = parsePlist(newStringStream(defaultInfoPlist))
-    plist["CFBundleName"] = %self.appName
-    plist["CFBundleIdentifier"] = %self.bundleId
-    plist["CFBundleExecutable"] = %self.appName
-    plist["CFBundleShortVersionString"] = %self.version
-    plist["CFBundleVersion"] = %self.buildTime
+    plist["CFBundleName"] = %self[appName]
+    plist["CFBundleIdentifier"] = %self[bundleId]
+    plist["CFBundleExecutable"] = %self[appName]
+    plist["CFBundleShortVersionString"] = %self[version]
+    plist["CFBundleVersion"] = %self[buildTime]
 
     plist.writePlist(self.macAppDir / "Info.plist")
 
@@ -67,28 +67,25 @@ proc runIOsSimulator(self: Config) =
 
     # Start the simulator
     let iOsSimApp = self.requireDir(self.xCodeAppPath / "Contents/Developer/Applications/Simulator.app")
-    self.requireSh(self.sourceDir, self.requireExe("open"), [ iOsSimApp ])
+    self.requireSh(self[sourceDir], self.requireExe("open"), [ iOsSimApp ])
 
     let xcrun = self.requireExe("xcrun")
 
     # Uninstall previous versions of the app
-    self.requireSh(self.sourceDir, xcrun, [ "simctl", "uninstall", "booted", self.bundleId ])
+    self.requireSh(self[sourceDir], xcrun, [ "simctl", "uninstall", "booted", self[bundleId] ])
 
     # Install the app
-    self.requireSh(self.sourceDir, xcrun, [ "simctl", "install", "booted", self.macAppDir ])
+    self.requireSh(self[sourceDir], xcrun, [ "simctl", "install", "booted", self.macAppDir ])
 
     # Now launch
     var launchArgs = @[ "simctl", "launch" ]
-    if self.debugger: launchArgs.add("--wait-for-debugger")
-    launchArgs.add([ "booted", self.bundleId ])
-    self.requireSh(self.sourceDir, xcrun, launchArgs)
+    if self[debugger]: launchArgs.add("--wait-for-debugger")
+    launchArgs.add([ "booted", self[bundleId] ])
+    self.requireSh(self[sourceDir], xcrun, launchArgs)
 
 proc iOsSimCompileConfig*(self: Config): CompileConfig =
     ## Compiler flags for compiling for the ios simulator
-    self.requireKey(appName)
-    self.requireKey(bundleId)
-    self.requireKey(version)
-    self.requireKey(buildDir)
+    self.requireKeys(appName, bundleId, version, buildDir)
 
     self.createPlist()
     result = CompileConfig(
@@ -103,7 +100,7 @@ proc iOsSimCompileConfig*(self: Config): CompileConfig =
             "-mios-version-min=" & self.sdkVersion(MacSdk.iPhoneSim),
             "-liconv"
         ],
-        binOutputPath: self.macAppDir / self.appName,
+        binOutputPath: self.macAppDir / self[appName],
         run: proc() = self.runIOsSimulator()
     )
 
