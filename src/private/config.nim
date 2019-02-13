@@ -1,4 +1,4 @@
-import util
+import util, macros
 
 type
     Platform* = enum

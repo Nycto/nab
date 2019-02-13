@@ -1,4 +1,4 @@
-import config, util
+import config, util, macros
 import httpclient, os, strutils, osproc, sequtils, system, strtabs, streams
 
 template require*(self: Config, pass: typed, msg: typed) =

@@ -1,4 +1,4 @@
-import private/config, private/configutil, private/sdl2, private/mac, private/util, private/nimble, private/readconfig
+import private / [ config, configutil, sdl2, mac, util, nimble, readconfig, initialize ]
 import os, sequtils, times
 
 template handleException(conf: Config, exec: untyped): untyped =
@@ -12,22 +12,23 @@ template handleException(conf: Config, exec: untyped): untyped =
         else:
             quit(QuitFailure)
 
-proc readConfig(): Config =
+proc readConfig(): tuple[action: CliAction, conf: Config] =
+    ## Reads the configuration to use for this build
 
     let defaultPlatform =
         when defined(macosx): Platform.MacOS
         else: Platform.Linux
 
-    result = Config(platform: defaultPlatform)
-    result[buildTime] = $getTime().toUnix
-    result[sourceDir] = getCurrentDir()
-    result[buildDir] = getCurrentDir() / "build"
-    result[verbose] = false
+    result.conf = Config(platform: defaultPlatform)
+    result.conf[buildTime] = $getTime().toUnix
+    result.conf[sourceDir] = getCurrentDir()
+    result.conf[buildDir] = getCurrentDir() / "build"
+    result.conf[verbose] = false
 
-    handleException(result):
-        result.parseNimble()
-        result.parseConfigFile()
-        result.parseCli()
+    handleException(result.conf):
+        result.conf.parseNimble()
+        result.conf.parseConfigFile()
+        result.action = result.conf.parseCli()
 
 proc compileConfig(self: Config): CompileConfig =
     ## Returns the compiler flags to pass for a platform build
@@ -47,11 +48,7 @@ proc compileConfig(self: Config): CompileConfig =
     of Platform.iOsSim:
         self.iOsSimCompileConfig()
 
-
-# General configuration
-let conf = readConfig()
-
-handleException(conf):
+proc compile(conf: Config) =
 
     # Instantiate the primary framework
     let framework = newSdl2Framework(conf)
@@ -91,4 +88,12 @@ handleException(conf):
 
     if conf[run]:
         compile.run()
+
+# General configuration
+let (action, conf) = readConfig()
+
+handleException(conf):
+    case action
+    of CliAction.Initialize: conf.initialize()
+    of CliAction.Compile: conf.compile()
 
