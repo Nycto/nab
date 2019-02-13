@@ -7,21 +7,23 @@ proc strConfMessage(key: StrConf): tuple[message, example: string] =
     of bundleId:    ("The unique namespace of this application.", "com.example.MyApp")
     of version:     ("The version of this release", "1.0.0")
     of sourceDir:   ("Where to find the source code being compiled", ".")
-    of buildDir:    ("Where to put all build artifacts", "build")
+    of buildDir:    ("Where to put all build artifacts", "./build")
     of buildTime:   raise newException(AssertionError, "Should not generally be initialized")
 
 proc readStrConf(conf: var pc.Config, key: StrConf, defaults: c.Config) =
     ## Reads a string configuration value from the command line
     let (message, example) = key.strConfMessage()
 
+    let default = if defaults.strs[key] != "": defaults.strs[key] else: example
+
     echo $key, ": ", message
     echo "For example: ", example
-    echo "Default: ", defaults[key]
+    echo "Default: ", default
     echo "What value would you like to use for ", $key, "?"
 
     stdout.write("> ")
     let value = stdin.readLine().apply(read):
-        if read == "": defaults[key] else: read
+        if read == "": default else: read
 
     echo ""
 

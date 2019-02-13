@@ -21,8 +21,8 @@ proc readConfig(): tuple[action: CliAction, conf: Config] =
 
     result.conf = Config(platform: defaultPlatform)
     result.conf[buildTime] = $getTime().toUnix
-    result.conf[sourceDir] = getCurrentDir()
-    result.conf[buildDir] = getCurrentDir() / "build"
+    result.conf[sourceDir] = "."
+    result.conf[buildDir] = "./build"
     result.conf[verbose] = false
 
     handleException(result.conf):
@@ -37,13 +37,13 @@ proc compileConfig(self: Config): CompileConfig =
         CompileConfig(
             flags: @[ "--os:linux", "-d:linux" ],
             binOutputPath: self[appName],
-            run: proc () = self.requireSh(self[sourceDir], self[appName])
+            run: proc () = self.requireSh(self.sourcePath, self[appName])
         )
     of Platform.MacOS:
         CompileConfig(
             flags: @[ "--os:macosx", "-d:macosx" ],
             binOutputPath: self[appName],
-            run: proc () = self.requireSh(self[sourceDir], self[appName])
+            run: proc () = self.requireSh(self.sourcePath, self[appName])
         )
     of Platform.iOsSim:
         self.iOsSimCompileConfig()
@@ -68,7 +68,7 @@ proc compile(conf: Config) =
     args.add("--out:" & compile.binOutputPath)
 
     # Make sure the source dir is includable
-    args.add("--path:" & conf[sourceDir])
+    args.add("--path:" & conf.sourcePath)
 
     # Keep the nimcache separate for each platform
     args.add("--nimcache:" & conf.nimcacheDir)
@@ -84,7 +84,7 @@ proc compile(conf: Config) =
     args.add(compile.linkerFlags.mapIt("--passL:" & it))
 
     # Invoke nimble
-    conf.requireSh(conf[sourceDir], conf.requireExe("nimble"), args)
+    conf.requireSh(conf.sourcePath, conf.requireExe("nimble"), args)
 
     if conf[run]:
         compile.run()

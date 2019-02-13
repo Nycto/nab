@@ -1,4 +1,4 @@
-import util, macros
+import util, os
 
 type
     Platform* = enum
@@ -40,8 +40,17 @@ type
         binOutputPath*: string          ## Where to put the executable file
         run*: proc()                    ## Triggers the run
 
+proc sourcePath*(self: Config): string =
+    ## Returns the source directory
+    absolutePath(self.strs[sourceDir]).normalizedPath
+
+proc buildPath*(self: Config): string =
+    ## Returns the build directory
+    absolutePath(self.strs[buildDir]).normalizedPath
+
 proc `[]`*(self: Config, key: StrConf): string =
     ## Returns as a string key
+    assert(key notin { buildDir, sourceDir }, "Keys should not be read directly. Use helper methods")
     self.strs[key]
 
 proc `[]`*(self: Config, key: BoolConf): bool =

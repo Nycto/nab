@@ -11,7 +11,7 @@ proc sdl2source(self: Sdl2Framework, conf: Config): string =
     let unzippedTo = conf.unzip("SDL2", conf.platformBuildDir / "sdl2") do () -> string:
         conf.download("SDL2",
             "https://www.libsdl.org/release/SDL2-" & self.sdl2Version & ".zip",
-            conf[buildDir] / "sdl2.zip"
+            conf.buildPath / "sdl2.zip"
         )
 
     # The zip file itself contains a directory, which is ultimately what we care about

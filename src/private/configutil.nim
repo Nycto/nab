@@ -25,7 +25,7 @@ proc requireFile*(self: Config, path: string): string =
 
 proc platformBuildDir*(self: Config): string =
     ## A directory for platform specific builds
-    result = self[buildDir] / $self.platform
+    result = self.buildPath / $self.platform
     result.ensureDir
 
 proc nimcacheDir*(self: Config): string =
@@ -83,7 +83,7 @@ proc requireCaptureSh*(self: Config, dir: string, command: string, args: varargs
     self.debug("Executing and capturing shell command", fullCommand)
 
     if not self[dryrun]:
-        var handle = startProcess(command, self[sourceDir], args, nil, {})
+        var handle = startProcess(command, self.sourcePath, args, nil, {})
         defer: close(handle)
         let stream = handle.outputStream
         defer: close(stream)
@@ -114,7 +114,7 @@ proc unzip*(self: Config, title: string, to: string, zipFile: proc(): string): s
         to.ensureDir
         let zip = zipFile()
         self.log "Unzipping " & title, "Destination: " & to
-        self.requireSh(self[buildDir], self.requireExe("unzip"), zip, "-d", to)
+        self.requireSh(self.buildPath, self.requireExe("unzip"), zip, "-d", to)
 
     self.debug title & " zip file location: " & to
 
@@ -161,7 +161,7 @@ proc archiveObjs*(self: Config, title: string, archivePath: string, getBuildDir:
 
         self.log("Creating archive for " & title, "Location: " & archivePath)
 
-        self.requireSh(self[buildDir], self.requireExe("ar"), concat(@["rcs", archivePath], objs))
+        self.requireSh(self.buildPath, self.requireExe("ar"), concat(@["rcs", archivePath], objs))
 
     self.debug title & " archive location: " & archivePath
 

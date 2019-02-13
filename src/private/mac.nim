@@ -67,21 +67,21 @@ proc runIOsSimulator(self: Config) =
 
     # Start the simulator
     let iOsSimApp = self.requireDir(self.xCodeAppPath / "Contents/Developer/Applications/Simulator.app")
-    self.requireSh(self[sourceDir], self.requireExe("open"), [ iOsSimApp ])
+    self.requireSh(self.sourcePath, self.requireExe("open"), [ iOsSimApp ])
 
     let xcrun = self.requireExe("xcrun")
 
     # Uninstall previous versions of the app
-    self.requireSh(self[sourceDir], xcrun, [ "simctl", "uninstall", "booted", self[bundleId] ])
+    self.requireSh(self.sourcePath, xcrun, [ "simctl", "uninstall", "booted", self[bundleId] ])
 
     # Install the app
-    self.requireSh(self[sourceDir], xcrun, [ "simctl", "install", "booted", self.macAppDir ])
+    self.requireSh(self.sourcePath, xcrun, [ "simctl", "install", "booted", self.macAppDir ])
 
     # Now launch
     var launchArgs = @[ "simctl", "launch" ]
     if self[debugger]: launchArgs.add("--wait-for-debugger")
     launchArgs.add([ "booted", self[bundleId] ])
-    self.requireSh(self[sourceDir], xcrun, launchArgs)
+    self.requireSh(self.sourcePath, xcrun, launchArgs)
 
 proc iOsSimCompileConfig*(self: Config): CompileConfig =
     ## Compiler flags for compiling for the ios simulator
