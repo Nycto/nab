@@ -54,8 +54,8 @@ const defaultInfoPlist = staticRead("../../resources/Info.plist")
 proc createPlist*(self: Config) =
     ## Returns the JsonNode representint the Info.plist file
     let plist = block:
-        let plistResourcePath = self.resources / "Info.plist"
-        if plistResourcePath.fileExist():
+        let plistResourcePath = self.resourcePath / "Info.plist"
+        if plistResourcePath.fileExists():
             parsePlist(newFileStream(plistResourcePath))
         else:
             parsePlist(newStringStream(defaultInfoPlist))
