@@ -16,7 +16,8 @@ type
         version,    ## The version of this release. For example, "1.0.0"
         buildTime,  ## The time at which this build was performed
         sourceDir,  ## Where to find the source code being compiled
-        buildDir    ## Where to put all build artifacts
+        buildDir,   ## Where to put all build artifacts
+        resourceDir ## Where to find resource files
 
     BoolConf* {. pure .} = enum
         dryrun,     ## Whether to actually perform actions
@@ -48,9 +49,13 @@ proc buildPath*(self: Config): string =
     ## Returns the build directory
     absolutePath(self.strs[buildDir]).normalizedPath
 
+proc resourcePath*(self: Config): string =
+    ## Returns the resource path
+    absolutePath(self.strs[resourceDir]).normalizedPath
+
 proc `[]`*(self: Config, key: StrConf): string =
     ## Returns as a string key
-    assert(key notin { buildDir, sourceDir }, "Keys should not be read directly. Use helper methods")
+    assert(key notin { buildDir, sourceDir, resourceDir }, "Keys should not be read directly. Use helper methods")
     self.strs[key]
 
 proc `[]`*(self: Config, key: BoolConf): bool =

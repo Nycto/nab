@@ -53,7 +53,13 @@ const defaultInfoPlist = staticRead("../../resources/Info.plist")
 
 proc createPlist*(self: Config) =
     ## Returns the JsonNode representint the Info.plist file
-    let plist = parsePlist(newStringStream(defaultInfoPlist))
+    let plist = block:
+        let plistResourcePath = self.resources / "Info.plist"
+        if plistResourcePath.fileExist():
+            parsePlist(newFileStream(plistResourcePath))
+        else:
+            parsePlist(newStringStream(defaultInfoPlist))
+
     plist["CFBundleName"] = %self[appName]
     plist["CFBundleIdentifier"] = %self[bundleId]
     plist["CFBundleExecutable"] = %self[appName]

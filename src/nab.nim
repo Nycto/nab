@@ -23,6 +23,7 @@ proc readConfig(): tuple[action: CliAction, conf: Config] =
     result.conf[buildTime] = $getTime().toUnix
     result.conf[sourceDir] = "."
     result.conf[buildDir] = "./build"
+    result.conf[resourceDir] = "./resources"
     result.conf[verbose] = false
 
     handleException(result.conf):

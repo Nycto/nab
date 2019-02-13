@@ -8,6 +8,7 @@ proc strConfMessage(key: StrConf): tuple[message, example: string] =
     of version:     ("The version of this release", "1.0.0")
     of sourceDir:   ("Where to find the source code being compiled", ".")
     of buildDir:    ("Where to put all build artifacts", "./build")
+    of resourceDir: ("Where to find resource files", "./resources")
     of buildTime:   raise newException(AssertionError, "Should not generally be initialized")
 
 proc readStrConf(conf: var pc.Config, key: StrConf, defaults: c.Config) =
