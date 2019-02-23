@@ -1,136 +1,143 @@
-# OpenGL example using SDL2
+import opengl, sdl2/sdl
 
-import sdl2
-import opengl
-import opengl/glu
+template initialize(width, height: int, window, code: untyped) =
+    try:
+        ## Initialize SDL2 and opengl
+        discard sdl.init(sdl.InitEverything)
+        defer: sdl.quit()
 
-discard sdl2.init(INIT_EVERYTHING)
+        let window = sdl.createWindow(
+            "Example",
+            sdl.WindowPosUndefined,
+            sdl.WindowPosUndefined,
+            w = width,
+            h = height,
+            sdl.WindowOpenGL or sdl.WindowShown
+        )
+        defer: window.destroyWindow()
 
-var screenWidth: cint = 640
-var screenHeight: cint = 480
+        let glcontext = glCreateContext(window)
+        defer: sdl.glDeleteContext(glcontext)
 
-var window = createWindow("SDL/OpenGL Skeleton", 100, 100, screenWidth, screenHeight, SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE)
-var context = window.glCreateContext()
+        loadExtensions()
+        glViewport(0, 0, width, height)
 
-# Initialize OpenGL
-loadExtensions()
-glClearColor(0.0, 0.0, 0.0, 1.0)                  # Set background color to black and opaque
-glClearDepth(1.0)                                 # Set background depth to farthest
-glEnable(GL_DEPTH_TEST)                           # Enable depth testing for z-culling
-glDepthFunc(GL_LEQUAL)                            # Set the type of depth-test
-glShadeModel(GL_SMOOTH)                           # Enable smooth shading
-glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST) # Nice perspective corrections
+        code
+    except:
+        sdl.log(getCurrentExceptionMsg())
+        raise
 
-proc reshape(newWidth: cint, newHeight: cint) =
-  glViewport(0, 0, newWidth, newHeight)   # Set the viewport to cover the new window
-  glMatrixMode(GL_PROJECTION)             # To operate on the projection matrix
-  glLoadIdentity()                        # Reset
-  gluPerspective(45.0, newWidth / newHeight, 0.1, 100.0)  # Enable perspective projection with fovy, aspect, zNear and zFar
+template gameLoop*(code: untyped) =
+    ## Run the game loop
+    var e: sdl.Event
+    block endGame:
+        while true:
+            while sdl.pollEvent(addr e) != 0:
+                if e.kind == sdl.Quit:
+                    break endGame
+            code
 
-proc render() =
-  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) # Clear color and depth buffers
-  glMatrixMode(GL_MODELVIEW)                          # To operate on model-view matrix
-  glLoadIdentity()                 # Reset the model-view matrix
-  glTranslatef(1.5, 0.0, -7.0)     # Move right and into the screen
 
-  # Render a cube consisting of 6 quads
-  # Each quad consists of 2 triangles
-  # Each triangle consists of 3 vertices
+template getShaderError(id: GLuint, ivFn, logFn: untyped): string =
+    ## Returns the error message associated with an operation
+    var logSize: GLint
+    ivFn(GLuint(id), GL_INFO_LOG_LENGTH, logSize.addr)
+    var logStr = cast[ptr GLchar](alloc(logSize))
+    defer: dealloc(logStr)
+    logFn(GLuint(id), logSize.GLsizei, nil, logStr)
+    $logStr
 
-  glBegin(GL_TRIANGLES)        # Begin drawing of triangles
+template isShaderValid(id: GLuint, ivFn: untyped, statusConst: typed): bool =
+    ## Checks a status function for failure
+    var status: GLint
+    ivFn(id, statusConst, status.addr)
+    status.bool
 
-  # Top face (y = 1.0f)
-  glColor3f(0.0, 1.0, 0.0)     # Green
-  glVertex3f( 1.0, 1.0, -1.0)
-  glVertex3f(-1.0, 1.0, -1.0)
-  glVertex3f(-1.0, 1.0,  1.0)
-  glVertex3f( 1.0, 1.0,  1.0)
-  glVertex3f( 1.0, 1.0, -1.0)
-  glVertex3f(-1.0, 1.0,  1.0)
+proc createShader(shaderType: GLenum, source: string): GLuint =
+    ## Define a shader
+    let shaderCString = allocCStringArray([source])
+    defer: deallocCStringArray(shaderCString)
+    result = glCreateShader(shaderType)
+    glShaderSource(result, 1, shaderCString, nil)
+    glCompileShader(result)
 
-  # Bottom face (y = -1.0f)
-  glColor3f(1.0, 0.5, 0.0)     # Orange
-  glVertex3f( 1.0, -1.0,  1.0)
-  glVertex3f(-1.0, -1.0,  1.0)
-  glVertex3f(-1.0, -1.0, -1.0)
-  glVertex3f( 1.0, -1.0, -1.0)
-  glVertex3f( 1.0, -1.0,  1.0)
-  glVertex3f(-1.0, -1.0, -1.0)
+    if not isShaderValid(result, glGetShaderiv, GL_COMPILE_STATUS):
+        let error = getShaderError(result, glGetShaderiv, glGetShaderInfoLog)
+        raise AssertionError.newException("Shader compilation failed: " & error)
 
-  # Front face  (z = 1.0f)
-  glColor3f(1.0, 0.0, 0.0)     # Red
-  glVertex3f( 1.0,  1.0, 1.0)
-  glVertex3f(-1.0,  1.0, 1.0)
-  glVertex3f(-1.0, -1.0, 1.0)
-  glVertex3f( 1.0, -1.0, 1.0)
-  glVertex3f( 1.0,  1.0, 1.0)
-  glVertex3f(-1.0, -1.0, 1.0)
+proc createProgram*(vertShader, fragShader: string): GLuint =
+    ## Creates a shader program
+    let vertexShader = GL_VERTEX_SHADER.createShader(vertShader)
+    let fragmentShader = GL_FRAGMENT_SHADER.createShader(fragShader)
 
-  # Back face (z = -1.0f)
-  glColor3f(1.0, 1.0, 0.0)     # Yellow
-  glVertex3f( 1.0, -1.0, -1.0)
-  glVertex3f(-1.0, -1.0, -1.0)
-  glVertex3f(-1.0,  1.0, -1.0)
-  glVertex3f( 1.0,  1.0, -1.0)
-  glVertex3f( 1.0, -1.0, -1.0)
-  glVertex3f(-1.0,  1.0, -1.0)
+    result = glCreateProgram()
+    glAttachShader(result, vertexShader)
+    glAttachShader(result, fragmentShader)
+    glLinkProgram(result)
+    glDeleteShader(vertexShader)
+    glDeleteShader(fragmentShader)
 
-  # Left face (x = -1.0f)
-  glColor3f(0.0, 0.0, 1.0)     # Blue
-  glVertex3f(-1.0,  1.0,  1.0)
-  glVertex3f(-1.0,  1.0, -1.0)
-  glVertex3f(-1.0, -1.0, -1.0)
-  glVertex3f(-1.0, -1.0,  1.0)
-  glVertex3f(-1.0,  1.0,  1.0)
-  glVertex3f(-1.0, -1.0, -1.0)
+    if not result.isShaderValid(glGetProgramiv, GL_LINK_STATUS):
+        let error = getShaderError(result, glGetProgramiv, glGetProgramInfoLog)
+        raise AssertionError.newException("Shader linking failed: " & error)
 
-  # Right face (x = 1.0f)
-  glColor3f(1.0, 0.0, 1.0)    # Magenta
-  glVertex3f(1.0,  1.0, -1.0)
-  glVertex3f(1.0,  1.0,  1.0)
-  glVertex3f(1.0, -1.0,  1.0)
-  glVertex3f(1.0, -1.0, -1.0)
-  glVertex3f(1.0,  1.0, -1.0)
-  glVertex3f(1.0, -1.0,  1.0)
+const vertexShader = """
+#version 320 es
+layout (location = 0) in mediump vec3 aPos;
+void main() {
+   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+}
+"""
 
-  glEnd()  # End of drawing
+const fragmentShader = """
+#version 320 es
+out mediump vec4 FragColor;
+void main() {
+   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+}
+"""
 
-  window.glSwapWindow() # Swap the front and back frame buffers (double buffering)
+# Vertices of a triangle
+var vertices = [
+    -0.5.GLfloat, -0.5.GLfloat, 0.0.GLfloat, # left
+    0.5.GLfloat, -0.5.GLfloat, 0.0.GLfloat,  # right
+    0.0.GLfloat,  0.5.GLfloat, 0.0.GLfloat  # top
+]
 
-# Frame rate limiter
+initialize(320, 240, window):
 
-let targetFramePeriod: uint32 = 20 # 20 milliseconds corresponds to 50 fps
-var frameTime: uint32 = 0
+    # Build and compile our shader program
+    let program = createProgram(vertexShader, fragmentShader)
 
-proc limitFrameRate() =
-  let now = getTicks()
-  if frameTime > now:
-    delay(frameTime - now) # Delay to maintain steady frame rate
-  frameTime += targetFramePeriod
+    # Create a vertex array to store the vertices and their data shape
+    var vao: GLuint
+    glGenVertexArrays(1, addr vao)
+    glBindVertexArray(vao)
 
-# Main loop
+    # Create a buffer and load in the vertices
+    var vbo: GLuint
+    glGenBuffers(1, addr vbo)
+    glBindBuffer(GL_ARRAY_BUFFER, vbo)
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), addr vertices, GL_STATIC_DRAW)
 
-var
-  evt = sdl2.defaultEvent
-  runGame = true
+    # Define the shape of the vertex data
+    glVertexAttribPointer(0, 3, cGL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), cast[Glvoid](0))
+    glEnableVertexAttribArray(0)
 
-reshape(screenWidth, screenHeight) # Set up initial viewport and projection
+    # Unbind the buffers as a good habit
+    glBindBuffer(GL_ARRAY_BUFFER, 0)
+    glBindVertexArray(0)
 
-while runGame:
-  while pollEvent(evt):
-    if evt.kind == QuitEvent:
-      runGame = false
-      break
-    if evt.kind == WindowEvent:
-      var windowEvent = cast[WindowEventPtr](addr(evt))
-      if windowEvent.event == WindowEvent_Resized:
-        let newWidth = windowEvent.data1
-        let newHeight = windowEvent.data2
-        reshape(newWidth, newHeight)
+    gameLoop():
+        # Reset the scene
+        glClearColor(0.2, 0.3, 0.3, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT)
 
-  render()
+        # Draw the triangle
+        glUseProgram(program)
+        glBindVertexArray(vao)
+        glDrawArrays(GL_TRIANGLES, 0, 3)
 
-  limitFrameRate()
-
-destroy window
+        # Swap in the new rendering
+        window.glSwapWindow()
 
