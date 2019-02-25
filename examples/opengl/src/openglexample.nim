@@ -18,8 +18,9 @@ template initialize(width, height: int, window, code: untyped) =
 
         # Ask for a new version of opengl
         sdl2assert sdl.glSetAttribute(GLattr.GL_ACCELERATED_VISUAL, 1)
-        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MAJOR_VERSION, 4)
-        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MINOR_VERSION, 4)
+        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MAJOR_VERSION, 3)
+        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MINOR_VERSION, 2)
+        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_PROFILE_MASK, sdl.GL_CONTEXT_PROFILE_CORE)
 
         # Turn on double buffering with a 24bit Z buffer.
         sdl2assert sdl.glSetAttribute(GLattr.GL_DOUBLEBUFFER, 1)
