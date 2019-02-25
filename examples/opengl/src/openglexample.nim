@@ -24,7 +24,9 @@ template initialize(width, height: int, window, code: untyped) =
         let glcontext = glCreateContext(window)
         defer: sdl.glDeleteContext(glcontext)
 
-        loadExtensions()
+        when not defined(ios):
+            loadExtensions()
+
         glViewport(0, 0, width, height)
 
         code
@@ -108,7 +110,7 @@ var vertices = [
     0.0.GLfloat,  0.5.GLfloat, 0.0.GLfloat  # top
 ]
 
-initialize(320, 240, window):
+initialize(320, 480, window):
 
     # Build and compile our shader program
     let program = createProgram(vertexShader, fragmentShader)
