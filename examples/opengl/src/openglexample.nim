@@ -17,9 +17,13 @@ template initialize(width, height: int, window, code: untyped) =
         defer: sdl.quit()
 
         # Ask for a new version of opengl
-        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MAJOR_VERSION, 3)
-        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MINOR_VERSION, 2)
-        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_PROFILE_MASK, GL_CONTEXT_PROFILE_ES)
+        sdl2assert sdl.glSetAttribute(GLattr.GL_ACCELERATED_VISUAL, 1)
+        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MAJOR_VERSION, 4)
+        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MINOR_VERSION, 4)
+
+        # Turn on double buffering with a 24bit Z buffer.
+        sdl2assert sdl.glSetAttribute(GLattr.GL_DOUBLEBUFFER, 1)
+        sdl2assert sdl.glSetAttribute(GLattr.GL_DEPTH_SIZE, 24)
 
         let window = sdl.createWindow(
             "Example",
@@ -38,6 +42,8 @@ template initialize(width, height: int, window, code: untyped) =
 
         when not defined(ios):
             loadExtensions()
+
+        sdl2assert sdl.glSetSwapInterval(1)
 
         glViewport(0, 0, width, height)
 
@@ -100,17 +106,19 @@ proc createProgram*(vertShader, fragShader: string): GLuint =
         let error = getShaderError(result, glGetProgramiv, glGetProgramInfoLog)
         raise AssertionError.newException("Shader linking failed: " & error)
 
+# A basic vertex shader that just forwards the vector position
 const vertexShader = """
-#version 320 es
-layout (location = 0) in mediump vec3 aPos;
+#version 330
+layout (location = 0) in vec3 position;
 void main() {
-   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+   gl_Position = vec4(position, 1.0);
 }
 """
 
+# A basic fragment shader that sets the color to orange
 const fragmentShader = """
-#version 320 es
-out mediump vec4 FragColor;
+#version 330
+out vec4 FragColor;
 void main() {
    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
 }
