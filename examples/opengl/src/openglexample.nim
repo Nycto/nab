@@ -6,6 +6,11 @@ template initialize(width, height: int, window, code: untyped) =
         discard sdl.init(sdl.InitEverything)
         defer: sdl.quit()
 
+        # Ask for a new version of opengl
+        discard sdl.glSetAttribute(GLattr.GL_CONTEXT_MAJOR_VERSION, 3)
+        discard sdl.glSetAttribute(GLattr.GL_CONTEXT_MINOR_VERSION, 2)
+        discard sdl.glSetAttribute(GLattr.GL_CONTEXT_PROFILE_MASK, GL_CONTEXT_PROFILE_ES)
+
         let window = sdl.createWindow(
             "Example",
             sdl.WindowPosUndefined,
@@ -36,7 +41,6 @@ template gameLoop*(code: untyped) =
                 if e.kind == sdl.Quit:
                     break endGame
             code
-
 
 template getShaderError(id: GLuint, ivFn, logFn: untyped): string =
     ## Returns the error message associated with an operation
