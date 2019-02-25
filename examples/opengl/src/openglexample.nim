@@ -1,15 +1,23 @@
 import opengl, sdl2/sdl
 
+template sdl2assert(condition: untyped) =
+    ## Asserts that an sdl2 related expression is truthy
+    let outcome = when compiles(condition == 0): condition == 0 else: condition
+    if not outcome:
+        let msg = astToStr(condition) & "; " & $sdl.getError()
+        sdl.log(msg)
+        raise AssertionError.newException(msg)
+
 template initialize(width, height: int, window, code: untyped) =
     try:
         ## Initialize SDL2 and opengl
-        discard sdl.init(sdl.InitEverything)
+        sdl2assert sdl.init(sdl.InitEverything)
         defer: sdl.quit()
 
         # Ask for a new version of opengl
-        discard sdl.glSetAttribute(GLattr.GL_CONTEXT_MAJOR_VERSION, 3)
-        discard sdl.glSetAttribute(GLattr.GL_CONTEXT_MINOR_VERSION, 2)
-        discard sdl.glSetAttribute(GLattr.GL_CONTEXT_PROFILE_MASK, GL_CONTEXT_PROFILE_ES)
+        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MAJOR_VERSION, 3)
+        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MINOR_VERSION, 2)
+        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_PROFILE_MASK, GL_CONTEXT_PROFILE_ES)
 
         let window = sdl.createWindow(
             "Example",
@@ -19,9 +27,11 @@ template initialize(width, height: int, window, code: untyped) =
             h = height,
             sdl.WindowOpenGL or sdl.WindowShown
         )
+        sdl2assert(window != nil)
         defer: window.destroyWindow()
 
         let glcontext = glCreateContext(window)
+        sdl2assert(glcontext != nil)
         defer: sdl.glDeleteContext(glcontext)
 
         when not defined(ios):
