@@ -2,10 +2,12 @@ import opengl, sdl2/sdl
 
 template sdl2assert(condition: untyped) =
     ## Asserts that an sdl2 related expression is truthy
-    let outcome = when compiles(condition == 0): condition == 0 else: condition
-    if not outcome:
+    let outcome =
+        when compiles(condition != 0): condition != 0
+        elif compiles(condition == nil): condition == nil:
+        else: not condition
+    if outcome:
         let msg = astToStr(condition) & "; " & $sdl.getError()
-        sdl.log(msg)
         raise AssertionError.newException(msg)
 
 template initialize(width, height: int, window, code: untyped) =
@@ -27,11 +29,11 @@ template initialize(width, height: int, window, code: untyped) =
             h = height,
             sdl.WindowOpenGL or sdl.WindowShown
         )
-        sdl2assert(window != nil)
+        sdl2assert window
         defer: window.destroyWindow()
 
         let glcontext = glCreateContext(window)
-        sdl2assert(glcontext != nil)
+        sdl2assert glcontext
         defer: sdl.glDeleteContext(glcontext)
 
         when not defined(ios):
@@ -42,6 +44,7 @@ template initialize(width, height: int, window, code: untyped) =
         code
     except:
         sdl.log(getCurrentExceptionMsg())
+        echo getCurrentExceptionMsg()
         raise
 
 template gameLoop*(code: untyped) =
