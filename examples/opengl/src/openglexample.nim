@@ -44,8 +44,6 @@ template initialize(width, height: int, window, code: untyped) =
         when not defined(ios):
             loadExtensions()
 
-        sdl2assert sdl.glSetSwapInterval(1)
-
         glViewport(0, 0, width, height)
 
         code
