@@ -25,7 +25,8 @@ proc getScreenSize(): tuple[width, height: cint, fullScreenFlag: uint32] =
 
 template initialize(window, code: untyped) =
     try:
-        ## Initialize SDL2 and opengl
+
+        # Initialize SDL2 and opengl
         sdl2assert sdl.init(sdl.InitEverything)
         defer: sdl.quit()
 
@@ -58,6 +59,12 @@ template initialize(window, code: untyped) =
 
         when not defined(ios):
             loadExtensions()
+
+        # Log a bit of opengl info
+        sdl.log("OpenGL vendor: " & $cast[cstring](glGetString(GL_VENDOR)))
+        sdl.log("OpenGL renderer: " & $cast[cstring](glGetString(GL_RENDERER)))
+        sdl.log("OpenGL Version: " & $cast[cstring](glGetString(GL_VERSION)))
+        sdl.log("OpenGL shader version: " & $cast[cstring](glGetString(GL_SHADING_LANGUAGE_VERSION)))
 
         glViewport(0, 0, screenSize.width, screenSize.height)
 
