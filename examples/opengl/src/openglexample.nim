@@ -19,7 +19,7 @@ template initialize(width, height: int, window, code: untyped) =
         # Ask for a new version of opengl
         sdl2assert sdl.glSetAttribute(GLattr.GL_ACCELERATED_VISUAL, 1)
         sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MAJOR_VERSION, 3)
-        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MINOR_VERSION, 2)
+        sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_MINOR_VERSION, 0)
         sdl2assert sdl.glSetAttribute(GLattr.GL_CONTEXT_PROFILE_MASK, sdl.GL_CONTEXT_PROFILE_CORE)
 
         # Turn on double buffering with a 24bit Z buffer.
@@ -109,8 +109,8 @@ proc createProgram*(vertShader, fragShader: string): GLuint =
 
 # A basic vertex shader that just forwards the vector position
 const vertexShader = """
-#version 330
-layout (location = 0) in vec3 position;
+#version 300 es
+layout (location = 0) in mediump vec3 position;
 void main() {
    gl_Position = vec4(position, 1.0);
 }
@@ -118,8 +118,8 @@ void main() {
 
 # A basic fragment shader that sets the color to orange
 const fragmentShader = """
-#version 330
-out vec4 FragColor;
+#version 300 es
+out lowp vec4 FragColor;
 void main() {
    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
 }
