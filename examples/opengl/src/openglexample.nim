@@ -10,7 +10,20 @@ template sdl2assert(condition: untyped) =
         let msg = astToStr(condition) & "; " & $sdl.getError()
         raise AssertionError.newException(msg)
 
-template initialize(width, height: int, window, code: untyped) =
+proc getScreenSize(): tuple[width, height: cint, fullScreenFlag: uint32] =
+    ## Determine the size of the display
+    when defined(ios):
+        var bounds: Rect
+        sdl2assert sdl.getDisplayBounds(displayIndex = 0, rect = addr bounds)
+        result.width = bounds.w
+        result.height = bounds.h
+        result.fullScreenFlag = sdl.WindowFullscreen
+    else:
+        result.width = 640
+        result.height = 480
+        result.fullScreenFlag = 0
+
+template initialize(window, code: untyped) =
     try:
         ## Initialize SDL2 and opengl
         sdl2assert sdl.init(sdl.InitEverything)
@@ -26,13 +39,15 @@ template initialize(width, height: int, window, code: untyped) =
         sdl2assert sdl.glSetAttribute(GLattr.GL_DOUBLEBUFFER, 1)
         sdl2assert sdl.glSetAttribute(GLattr.GL_DEPTH_SIZE, 24)
 
+        let screenSize = getScreenSize()
+
         let window = sdl.createWindow(
             "Example",
             sdl.WindowPosUndefined,
             sdl.WindowPosUndefined,
-            w = width,
-            h = height,
-            sdl.WindowOpenGL or sdl.WindowShown
+            w = screenSize.width,
+            h = screenSize.height,
+            screenSize.fullScreenFlag or sdl.WindowOpenGL or sdl.WindowShown
         )
         sdl2assert window
         defer: window.destroyWindow()
@@ -44,7 +59,7 @@ template initialize(width, height: int, window, code: untyped) =
         when not defined(ios):
             loadExtensions()
 
-        glViewport(0, 0, width, height)
+        glViewport(0, 0, screenSize.width, screenSize.height)
 
         code
     except:
@@ -130,7 +145,7 @@ var vertices = [
     0.0.GLfloat,  0.5.GLfloat, 0.0.GLfloat  # top
 ]
 
-initialize(320, 480, window):
+initialize(window):
 
     # Build and compile our shader program
     let program = createProgram(vertexShader, fragmentShader)
@@ -154,7 +169,7 @@ initialize(320, 480, window):
     glBindBuffer(GL_ARRAY_BUFFER, 0)
     glBindVertexArray(0)
 
-    gameLoop():
+    gameLoop:
         # Reset the scene
         glClearColor(0.2, 0.3, 0.3, 1.0)
         glClear(GL_COLOR_BUFFER_BIT)
